@@ -1014,6 +1014,8 @@ NG-007: 커스텀 플러그인 시스템
 
 ### 9.1 CLAUDE.md 템플릿
 
+> 💡 더 상세한 CLAUDE.md 작성 가이드와 품질 체크리스트는 [CLAUDE.md 템플릿 킷](../CLAUDE_MD/templates/README.md)을 참고하세요.
+
 Claude Code 전용 프로젝트 지시서 템플릿이다. 300줄 이하를 유지하되, 6대 핵심 영역을 모두 포함한다.
 
 ````markdown
