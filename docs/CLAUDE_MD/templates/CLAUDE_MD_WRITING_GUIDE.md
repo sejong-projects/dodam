@@ -389,6 +389,52 @@ CLAUDE.md는 지시서입니다. "~하면 좋겠습니다"가 아니라 "~합니
 
 500줄을 초과하면 AI가 우선순위를 놓치고 중요한 규칙을 간과합니다. 핵심만 200줄 이내로 작성하고, 상세 규칙은 `@.claude/rules/architecture.md` 등으로 모듈화하세요.
 
+**나쁜 예시:**
+```markdown
+# CLAUDE.md (600줄짜리 단일 파일)
+## Tech Stack
+- Runtime: Node.js 20 LTS
+- Backend: NestJS 10 + Fastify 5
+...
+## 아키텍처 규칙
+- 레이어드 아키텍처를 따릅니다
+- Controller -> Service -> Repository 단방향 의존성
+... (100줄)
+## 테스트 전략
+- Jest + @nestjs/testing 사용
+- 단위 테스트, 통합 테스트, E2E 테스트 패턴
+... (100줄)
+## API 컨벤션
+- RESTful 네이밍 규칙
+- 요청/응답 DTO 패턴
+... (100줄)
+## 보안 규칙
+- 인증/인가 처리 방식
+- 입력 검증 규칙
+... (100줄)
+## 배포 규칙
+...
+# -> AI가 뒤쪽 규칙을 놓치고 앞부분만 집중적으로 따름
+```
+
+**개선된 예시:**
+```markdown
+# CLAUDE.md (핵심 규칙 200줄 이내)
+## Tech Stack
+- Runtime: Node.js 20 LTS
+- Backend: NestJS 10 + Fastify 5
+
+## 핵심 개발 규칙
+- Controller -> Service -> Repository 단방향 의존성
+- 함수는 50줄 이하로 유지합니다
+
+## 상세 규칙 참조
+- @.claude/rules/architecture.md
+- @.claude/rules/testing.md
+- @.claude/rules/api-conventions.md
+- @.claude/rules/security.md
+```
+
 ### 6.3 모순되는 규칙
 
 서로 충돌하는 규칙을 작성하면 AI가 예측 불가능한 행동을 합니다.
@@ -412,9 +458,65 @@ CLAUDE.md는 지시서입니다. "~하면 좋겠습니다"가 아니라 "~합니
 
 실제로 사용하지 않는 패턴을 규칙으로 작성하면 AI가 불필요한 코드를 생성합니다. 예를 들어 모놀리스 프로젝트에서 `gRPC`, `Kafka`, `Circuit Breaker`를 규칙화하면 안 됩니다. 현재 프로젝트에서 실제로 사용하는 패턴만 작성하세요.
 
+**나쁜 예시:**
+```markdown
+# 단순 REST API 프로젝트인데 과잉 규칙 작성
+## 통신 규칙
+- 서비스 간 통신은 gRPC를 사용합니다
+- 이벤트 기반 처리는 Kafka를 사용합니다
+## 장애 대응
+- 외부 API 호출 시 Circuit Breaker 패턴을 적용합니다
+- Retry 정책: 최대 3회, 지수 백오프 적용
+## 캐싱 전략
+- L1: 로컬 메모리 캐시 (node-cache)
+- L2: 분산 캐시 (Redis Cluster)
+- L3: CDN 캐시
+# -> 실제로는 Express + PostgreSQL만 사용하는 단순 REST API
+```
+
+**개선된 예시:**
+```markdown
+# 실제 프로젝트에서 사용하는 패턴만 작성
+## 통신 규칙
+- REST API로 클라이언트와 통신합니다
+- 응답 형식: { data, message, statusCode }
+## 에러 처리
+- 모든 API 핸들러에서 try-catch로 감싸고 AppException을 throw합니다
+- HTTP 상태 코드는 표준을 따릅니다 (200, 201, 400, 401, 404, 500)
+## 캐싱
+- 자주 조회되는 사용자 정보는 Redis에 TTL 5분으로 캐싱합니다
+```
+
 ### 6.5 업데이트하지 않는 CLAUDE.md
 
 프로젝트가 변경되었는데 CLAUDE.md를 업데이트하지 않으면 AI가 오래된 규칙을 따릅니다. TypeORM에서 Prisma로, Mocha에서 Jest로, Node.js 16에서 20으로 전환했다면 CLAUDE.md도 즉시 업데이트하세요. 기술 스택 변경, 디렉터리 구조 변경, 새로운 컨벤션 도입 시 반드시 동기화합니다.
+
+**나쁜 예시:**
+```markdown
+# 6개월 전에 작성 후 방치된 CLAUDE.md
+## Tech Stack
+- Runtime: Node.js 16
+- ORM: TypeORM 0.3
+- Test: Mocha + Chai
+## 개발 규칙
+- TypeORM 엔티티는 @Entity 데코레이터를 사용합니다
+- 테스트는 describe/it 구문으로 Mocha를 사용합니다
+- 빌드: `npm run build` (webpack 사용)
+# -> 실제로는 Node.js 20, Prisma 5, Jest, Vite로 전환 완료된 상태
+```
+
+**개선된 예시:**
+```markdown
+# 현재 프로젝트 상태를 반영한 CLAUDE.md
+## Tech Stack
+- Runtime: Node.js 20 LTS
+- ORM: Prisma 5.x
+- Test: Jest + @nestjs/testing
+## 개발 규칙
+- Prisma 스키마는 prisma/schema.prisma에서 관리합니다
+- 테스트는 Jest의 describe/it 구문으로 작성합니다
+- 빌드: `npm run build` (Vite 사용)
+```
 
 ---
 
