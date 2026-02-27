@@ -38,7 +38,7 @@
      모든 디렉터리를 나열할 필요는 없으며, 핵심 디렉터리만 포함하세요. -->
 
 ```
-[project-root]/
+[프로젝트명]/                # 프로젝트 루트 디렉토리
 ├── src/
 │   ├── [modules/]          # [역할 — 예: 도메인별 모듈]
 │   ├── [common/]           # [역할 — 예: 공통 유틸리티, 데코레이터]
@@ -74,7 +74,9 @@
 | 파일명 | [예: kebab-case] | [예: user-service.ts] |
 | 디렉터리명 | [예: kebab-case] | [예: user-module/] |
 
-```[language]
+```typescript
+// 언어 태그를 프로젝트 언어로 변경하세요 (예: python, go, java)
+
 // ✅ Good: [설명]
 [좋은 코드 예시]
 
@@ -84,19 +86,28 @@
 
 ### 패턴
 
-<!-- 프로젝트에서 사용하는 디자인 패턴을 코드 예시로 보여줍니다.
-     예: Repository 패턴, Service 패턴, DTO 변환 패턴 등 -->
+<!-- 프로젝트에서 사용하는 핵심 디자인 패턴을 코드 예시로 보여줍니다.
+     예: Repository 패턴, Service 패턴, DTO 변환 패턴 등
+     권장 개수: 2~5개의 핵심 패턴만 포함하세요. 너무 많으면 컨텍스트가 흐려집니다.
+     작성 가이드 권장 형식: 각 패턴마다 `// ✅ Good` / `// ❌ Bad` 쌍으로 올바른 사용법과 안티패턴을 함께 보여주세요. -->
 
-```[language]
-// [패턴명 — 예: 서비스 클래스 작성 규약]
-[코드 예시]
+```typescript
+// 언어 태그를 프로젝트 언어로 변경하세요 (예: python, go, java)
+
+// ✅ Good: [패턴명 — 예: 서비스 클래스에서 Repository 패턴 사용]
+[좋은 코드 예시]
+
+// ❌ Bad: [안티패턴 설명 — 예: 서비스에서 직접 DB 쿼리 호출]
+[나쁜 코드 예시]
 ```
 
 ### 임포트 규칙
 
 <!-- 임포트 순서와 경로 별칭을 정의합니다. 순서가 명확할수록 코드 일관성이 높아집니다. -->
 
-```[language]
+```typescript
+// 언어 태그를 프로젝트 언어로 변경하세요 (예: python, go, java)
+
 // 1. 외부 패키지
 import [예: { Injectable } from '@nestjs/common'];
 
@@ -121,8 +132,7 @@ import [예: { UserDto } from './dto/user.dto'];
 |------|--------|------|
 | 개발 | `[예: pnpm dev]` | [예: 개발 서버 시작 (포트 3000)] |
 | 빌드 | `[예: pnpm build]` | [예: 프로덕션 빌드] |
-| 테스트 | `[예: pnpm test]` | [예: 전체 테스트 실행] |
-| 테스트 (단일) | `[예: pnpm test -- --filter=파일명]` | [예: 특정 테스트 파일만 실행] |
+<!-- 테스트 관련 명령어는 '테스트' 섹션을 참고하세요 -->
 | 린트 | `[예: pnpm lint]` | [예: ESLint 검사] |
 | 포맷 | `[예: pnpm format]` | [예: Prettier 포맷팅] |
 | DB 마이그레이션 | `[예: pnpm prisma migrate dev]` | [예: 개발 DB 마이그레이션 적용] |
@@ -221,7 +231,9 @@ import [예: { UserDto } from './dto/user.dto'];
 - **네이밍 규칙**: [예: `describe('클래스명')` > `it('메서드명 — 시나리오')` 형식]
 - **모킹 전략**: [예: jest.mock()으로 외부 의존성 모킹, PrismaService는 수동 모킹]
 
-```[language]
+```typescript
+// 언어 태그를 프로젝트 언어로 변경하세요 (예: python, go, java)
+
 // [테스트 코드 예시]
 describe('[클래스명]', () => {
   it('[메서드명] — [시나리오]', async () => {
@@ -284,3 +296,5 @@ describe('[클래스명]', () => {
 | [예: Prettier] | [예: 코드 포맷팅] | [예: .prettierrc] |
 | [예: GitHub Actions] | [예: CI/CD 파이프라인] | [예: .github/workflows/] |
 | [예: Husky] | [예: Git hooks] | [예: .husky/] |
+
+---
