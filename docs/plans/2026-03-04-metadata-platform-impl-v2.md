@@ -1,6 +1,10 @@
 # 메타데이터 관리 플랫폼 MVP 구현 계획 (v2)
 
 > **For Claude:** REQUIRED SUB-SKILL: Use superpowers:executing-plans to implement this plan task-by-task.
+>
+> **워크플로우 규칙:**
+> 1. **매 Task 시작 전** — 반드시 `superpowers:brainstorming` 스킬을 먼저 실행하여 구현 방향을 점검한다.
+> 2. **매 Task 완료 후** — `docs/releases/` 디렉토리에 릴리스 노트를 작성한다. 기존 릴리스 노트가 있으면 해당 파일에 신규 Task 내용을 추가하고, 없으면 새로 생성한다. YAML frontmatter의 `scope` 필드를 업데이트할 것.
 
 **Goal:** 표준 용어/도메인/코드를 관리하고 승인 워크플로우를 지원하는 메타데이터 관리 웹 플랫폼 MVP 구축
 
