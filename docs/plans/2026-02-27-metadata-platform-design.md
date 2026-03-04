@@ -26,7 +26,7 @@
 
 - 표준 용어/도메인/코드 CRUD + 검색 + 페이징
 - 승인 워크플로우 (등록 → 검토 → 승인/반려)
-- RBAC 인증/권한 관리
+- RBAC(Role-based Access Control) 인증/권한 관리
 - 관리자 페이지 (사용자/역할 관리)
 
 ---
@@ -102,6 +102,7 @@ metadata-platform/
 ### 4.1 사용자 & 권한 (RBAC)
 
 **User**
+
 | 컬럼 | 타입 | 설명 |
 |---|---|---|
 | id | UUID | PK |
@@ -114,6 +115,7 @@ metadata-platform/
 | updatedAt | DateTime | 수정일시 |
 
 **Role**
+
 | 컬럼 | 타입 | 설명 |
 |---|---|---|
 | id | UUID | PK |
@@ -122,6 +124,7 @@ metadata-platform/
 | permissions | JSON | 권한 목록 |
 
 **UserRole** (N:M 관계)
+
 | 컬럼 | 타입 | 설명 |
 |---|---|---|
 | userId | UUID | FK → User |
@@ -131,6 +134,7 @@ metadata-platform/
 ### 4.2 표준 용어 (Standard Terms)
 
 **StandardTerm**
+
 | 컬럼 | 타입 | 설명 |
 |---|---|---|
 | id | UUID | PK |
@@ -148,6 +152,7 @@ metadata-platform/
 ### 4.3 표준 도메인 (Standard Domains)
 
 **StandardDomain**
+
 | 컬럼 | 타입 | 설명 |
 |---|---|---|
 | id | UUID | PK |
@@ -165,6 +170,7 @@ metadata-platform/
 ### 4.4 표준 코드 (Standard Codes)
 
 **CodeGroup**
+
 | 컬럼 | 타입 | 설명 |
 |---|---|---|
 | id | UUID | PK |
@@ -177,6 +183,7 @@ metadata-platform/
 | updatedAt | DateTime | 수정일시 |
 
 **CodeItem**
+
 | 컬럼 | 타입 | 설명 |
 |---|---|---|
 | id | UUID | PK |
@@ -191,6 +198,7 @@ metadata-platform/
 ### 4.5 승인 워크플로우
 
 **ApprovalRequest**
+
 | 컬럼 | 타입 | 설명 |
 |---|---|---|
 | id | UUID | PK |
@@ -205,6 +213,7 @@ metadata-platform/
 | updatedAt | DateTime | 수정일시 |
 
 **ApprovalHistory**
+
 | 컬럼 | 타입 | 설명 |
 |---|---|---|
 | id | UUID | PK |
@@ -215,6 +224,7 @@ metadata-platform/
 | createdAt | DateTime | 행위 일시 |
 
 **워크플로우 상태 흐름:**
+
 ```
 등록 요청(PENDING) → 검토 중(REVIEWING) → 승인(APPROVED) → 표준 데이터 status → ACTIVE
                                         → 반려(REJECTED) → 담당자에게 반려 사유 표시
