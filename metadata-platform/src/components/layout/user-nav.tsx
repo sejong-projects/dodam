@@ -46,7 +46,11 @@ export function UserNav({ userName, userEmail }: UserNavProps) {
         <DropdownMenuSeparator />
         <DropdownMenuItem
           onClick={async () => {
-            await authClient.signOut()
+            try {
+              await authClient.signOut()
+            } catch {
+              // signOut failed, but still redirect to clear local state
+            }
             router.push('/login')
           }}
         >
