@@ -3,13 +3,13 @@ title: 메타데이터 관리 플랫폼 v0.1.0 — 프로젝트 초기 구축
 version: 0.1.0
 date: 2026-03-04
 branch: feature/metadata-platform
-scope: Task 1 ~ Task 5 (구현 계획 v2 기준)
+scope: Task 1 ~ Task 6 (구현 계획 v2 기준)
 design_doc: docs/plans/2026-03-04-metadata-platform-impl-v2.md
 ---
 
 ## 개요
 
-메타데이터 관리 플랫폼의 기반 인프라를 구축했습니다. 프로젝트 초기 설정부터 데이터베이스 스키마, 인증 시스템, 로그인/회원가입 UI, TanStack Query 인프라까지 — 이후 CRUD 기능 개발을 위한 토대가 완성되었습니다.
+메타데이터 관리 플랫폼의 기반 인프라를 구축했습니다. 프로젝트 초기 설정부터 데이터베이스 스키마, 인증 시스템, 로그인/회원가입 UI, TanStack Query 인프라, 대시보드 레이아웃까지 — 이후 CRUD 기능 개발을 위한 토대가 완성되었습니다.
 
 ---
 
@@ -115,6 +115,30 @@ design_doc: docs/plans/2026-03-04-metadata-platform-impl-v2.md
 - **QueryProvider** (`src/lib/query/provider.tsx`): `'use client'` 컴포넌트, `staleTime: 60s`, `retry: 1` 기본 설정, ReactQueryDevtools 포함
 - **Root Layout 연동** (`src/app/layout.tsx`): `<QueryProvider>`로 `{children}` 감싸기
 
+### Task 6: 대시보드 레이아웃 (Sidebar + Header)
+
+**커밋:** `bb49ae1` ~ `d1444c2` (6 commits)
+
+- **세션 헬퍼** (`src/lib/auth/get-session.ts`): 서버 사이드 세션 조회 + 역할 유틸리티 (`getSession()`, `hasRole()`, `hasAnyRole()`)
+- **사이드바** (`src/components/layout/app-sidebar.tsx`): shadcn/ui Sidebar 기반
+  - 메타데이터 관리 그룹: 표준 용어, 표준 도메인, 표준 코드, 승인 관리
+  - 관리자 그룹 (ADMIN 역할만 표시): 사용자 관리
+  - `usePathname()` 기반 활성 메뉴 하이라이트
+- **헤더** (`src/components/layout/app-header.tsx`): SidebarTrigger + 앱 타이틀 + 사용자 메뉴
+- **사용자 네비게이션** (`src/components/layout/user-nav.tsx`): 아바타 이니셜 + 드롭다운 (이름, 이메일, 로그아웃)
+- **대시보드 레이아웃** (`src/app/(dashboard)/layout.tsx`): 서버 컴포넌트에서 세션 조회 → 사이드바/헤더에 props 전달
+- **플레이스홀더 페이지** 5개: `/standards`, `/domains`, `/codes`, `/workflow`, `/admin/users`
+
+### 인증 버그 수정
+
+**커밋:** `db6c463`
+
+- **Better Auth 패스워드 해싱 불일치**: 시드에서 bcrypt 사용 → Better Auth는 scrypt 사용. `better-auth/crypto`의 `hashPassword`로 교체
+- **User.password 필수 → 선택**: Better Auth는 users 테이블에 password를 저장하지 않고 accounts 테이블 사용. `String` → `String?`로 변경
+- **emailVerified 필드 누락**: Better Auth가 사용자 생성 시 요구하는 필드 추가
+- **accounts 테이블 시드 누락**: Better Auth credential 인증용 account 레코드 시드에 추가
+- `bcryptjs` 의존성 제거, `better-auth/crypto` 사용으로 통일
+
 ---
 
 ## 구현 중 발견된 이슈 및 해결
@@ -131,14 +155,21 @@ design_doc: docs/plans/2026-03-04-metadata-platform-impl-v2.md
 - **문제:** Prisma 7은 `prisma.config.ts`에서 datasource URL을 설정하며, `dotenv/config` import 필요
 - **해결:** `dotenv` dev dependency 추가
 
+### 4. Better Auth 패스워드 해싱 불일치
+- **문제:** 시드에서 `bcryptjs`로 해싱한 비밀번호를 Better Auth가 인식하지 못함 (`Invalid password hash`). Better Auth는 내부적으로 scrypt (`@noble/hashes`)를 사용하며, 해시 형식이 `hexSalt:hexKey`로 bcrypt의 `$2a$...` 형식과 호환되지 않음
+- **해결:** `bcryptjs` 제거, `better-auth/crypto`의 `hashPassword`로 시드 해싱 통일
+
+### 5. Better Auth 스키마 호환성
+- **문제:** Better Auth가 사용자 생성 시 `emailVerified` 필드와 `accounts` 테이블을 요구하지만, 초기 스키마에 누락
+- **해결:** User 모델에 `emailVerified Boolean @default(false)` 추가, `password` 필드를 `String?`로 변경, 시드에 credential account 레코드 추가
+
 ---
 
 ## 남은 작업
 
 | Task | 설명 | 상태 |
 |------|------|------|
-| Task 5 | TanStack Query 설정 & API 클라이언트 | 완료 |
-| Task 6 | 대시보드 레이아웃 (Sidebar + Header) | 대기 |
+| Task 6 | 대시보드 레이아웃 (Sidebar + Header) | 완료 |
 | Task 7 | 표준 도메인 CRUD (API + UI) | 대기 |
 | Task 8 | 표준 용어 CRUD (API + UI) | 대기 |
 | Task 9 | 표준 코드 CRUD (API + UI) | 대기 |
@@ -155,18 +186,30 @@ metadata-platform/
 ├── prisma/
 │   ├── migrations/         # DB 마이그레이션 이력
 │   ├── schema.prisma       # 데이터 모델 정의
-│   └── seed.ts             # 초기 데이터
+│   └── seed.ts             # 초기 데이터 (better-auth/crypto 해싱)
 ├── src/
 │   ├── app/
 │   │   ├── (auth)/
 │   │   │   ├── layout.tsx          # 인증 레이아웃
 │   │   │   ├── login/page.tsx      # 로그인
 │   │   │   └── signup/page.tsx     # 회원가입
+│   │   ├── (dashboard)/
+│   │   │   ├── layout.tsx          # 대시보드 레이아웃 (Sidebar + Header)
+│   │   │   ├── standards/page.tsx  # 표준 용어 (플레이스홀더)
+│   │   │   ├── domains/page.tsx    # 표준 도메인 (플레이스홀더)
+│   │   │   ├── codes/page.tsx      # 표준 코드 (플레이스홀더)
+│   │   │   ├── workflow/page.tsx   # 승인 관리 (플레이스홀더)
+│   │   │   └── admin/users/page.tsx # 사용자 관리 (플레이스홀더)
 │   │   ├── api/auth/[...all]/
 │   │   │   └── route.ts            # Better Auth API
 │   │   ├── layout.tsx              # 루트 레이아웃
 │   │   └── page.tsx                # / → /login 리다이렉트
-│   ├── components/ui/              # shadcn/ui 컴포넌트 (18종)
+│   ├── components/
+│   │   ├── layout/
+│   │   │   ├── app-sidebar.tsx     # 사이드바 (역할 기반 메뉴)
+│   │   │   ├── app-header.tsx      # 헤더 (트리거 + 타이틀 + 사용자 메뉴)
+│   │   │   └── user-nav.tsx        # 사용자 아바타 드롭다운
+│   │   └── ui/                     # shadcn/ui 컴포넌트 (21종)
 │   ├── generated/prisma/           # Prisma 생성 코드 (.gitignore)
 │   ├── lib/
 │   │   ├── api/
@@ -174,13 +217,16 @@ metadata-platform/
 │   │   ├── auth/
 │   │   │   ├── index.ts            # Better Auth 서버 설정
 │   │   │   ├── client.ts           # Better Auth 클라이언트
-│   │   │   └── actions.ts          # RBAC 서버 액션
+│   │   │   ├── actions.ts          # RBAC 서버 액션
+│   │   │   └── get-session.ts      # 서버 사이드 세션 헬퍼
 │   │   ├── db/
 │   │   │   └── prisma.ts           # Prisma 싱글톤 클라이언트
 │   │   ├── query/
 │   │   │   ├── keys.ts             # Query Key Factory
 │   │   │   └── provider.tsx        # QueryProvider (TanStack Query)
 │   │   └── utils.ts                # cn() 유틸리티
+│   ├── hooks/
+│   │   └── use-mobile.ts           # 모바일 감지 훅 (shadcn sidebar용)
 │   ├── proxy.ts                    # 라우트 보호 (Next.js 16)
 │   ├── test/setup.ts               # Vitest 설정
 │   └── types/auth.ts               # SessionUser 타입
