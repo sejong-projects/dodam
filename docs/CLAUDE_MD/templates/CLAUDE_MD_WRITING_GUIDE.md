@@ -193,7 +193,7 @@ export class UserService {
 ## Tech Stack
 - Runtime: Node.js 20 LTS
 - Backend: NestJS 10 + Fastify 5
-- Database: PostgreSQL 16
+- Database: PostgreSQL 18
 - ORM: Prisma 5.x
 - Cache: Redis 7
 ```

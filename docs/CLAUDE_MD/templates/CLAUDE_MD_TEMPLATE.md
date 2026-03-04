@@ -11,7 +11,7 @@
      버전 정보를 반드시 포함하세요 — 버전에 따라 API가 크게 달라질 수 있습니다. -->
 
 - **설명**: [프로젝트 한 줄 설명 — 예: 사용자 인증 및 권한 관리 API 서버]
-- **기술 스택**: [예: TypeScript, Next.js 14, PostgreSQL 16]
+- **기술 스택**: [예: TypeScript, Next.js 14, PostgreSQL 18]
 - **패키지 매니저**: [예: pnpm]
 - **Node 버전**: [예: v20.x]
 
