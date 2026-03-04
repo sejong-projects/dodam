@@ -1,7 +1,7 @@
 ---
 title: "dodam — CLAUDE.md"
 description: "Development instruction for Claude Code working in the dodam repository"
-version: "1.0"
+version: "1.1"
 date: "2026-03-04"
 language: "en"
 ---
@@ -114,6 +114,13 @@ All API Routes use try-catch with this format. Validate inputs with Zod.
 
 - **Branches:** `feature/`, `fix/`, `docs/`, `refactor/`, `chore/` + description
 - **Commits:** English, Conventional Commits — `feat`, `fix`, `docs`, `style`, `refactor`, `test`, `chore`
+
+### Pull Request Strategy
+
+- **Feature branches** (`feature/*`): Create a PR to `main` only after ALL tasks are complete and integration/E2E tests pass. Do not create intermediate PRs per task — accumulate commits on the feature branch.
+- **Global config changes** (CLAUDE.md, .gitignore, CI configs): These are branch-independent. Create a separate short-lived branch (e.g. `docs/...`, `chore/...`) off `main`, PR immediately, and merge.
+- **Before creating any PR:** Run `npx tsc --noEmit`, `npm run build`, and `npm run test:run` to verify. All must pass.
+- **PR format:** Use `gh pr create` with `## Summary` (bullet points) and `## Test plan` (checklist) sections.
 
 ## Documentation
 
