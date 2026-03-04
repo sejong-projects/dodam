@@ -580,6 +580,38 @@ Closes #42
 ```
 ````
 
+### 5.5.1 릴리스 노트 작성 (Release Notes)
+
+작업 배치(Batch) 또는 의미 있는 구현 단위가 완료될 때마다, `docs/releases/` 하위에 릴리스 노트를 작성하여 변경 이력을 기록한다.
+
+**파일 규칙:**
+- 경로: `docs/releases/`
+- 파일명: `{YYYY-MM-DD}-{프로젝트명}-v{버전}.md`
+  - 예: `2026-03-04-metadata-platform-v0.1.0.md`
+- 메타 정보는 반드시 **YAML frontmatter**로 기입한다
+
+**YAML frontmatter 예시:**
+```yaml
+---
+title: 프로젝트명 vX.Y.Z — 릴리스 제목
+version: X.Y.Z
+date: YYYY-MM-DD
+branch: feature/branch-name
+scope: Task N ~ Task M (구현 계획 기준)
+design_doc: docs/plans/YYYY-MM-DD-plan-name.md
+---
+```
+
+**릴리스 노트 포함 내용:**
+- 개요 (변경 요약)
+- 기술 스택 (해당 시점의 스택)
+- 구현 내역 (Task별 상세)
+- 구현 중 발견된 이슈 및 해결
+- 남은 작업
+- 프로젝트 구조 (현재 시점)
+
+> **Note:** 모든 마크다운 문서의 메타 정보(날짜, 버전, 브랜치 등)는 YAML frontmatter를 사용한다. 본문에 볼드 텍스트로 메타 정보를 기입하지 않는다.
+
 ### 5.6 경계 & 제약 (Boundaries & Constraints)
 
 섹션 3.6의 3단계 경계 시스템을 구체적으로 적용한다.
