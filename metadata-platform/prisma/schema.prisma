@@ -1,0 +1,274 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ============================================
+// 사용자 & 권한 (RBAC)
+// ============================================
+
+enum UserStatus {
+  ACTIVE
+  INACTIVE
+}
+
+enum RoleName {
+  ADMIN
+  STANDARD_MANAGER
+  APPROVER
+  VIEWER
+}
+
+model User {
+  id         String     @id @default(uuid())
+  email      String     @unique
+  password   String
+  name       String
+  department String?
+  status     UserStatus @default(ACTIVE)
+  createdAt  DateTime   @default(now())
+  updatedAt  DateTime   @updatedAt
+
+  roles             UserRole[]
+  createdTerms      StandardTerm[]     @relation("TermCreator")
+  createdDomains    StandardDomain[]   @relation("DomainCreator")
+  createdCodeGroups CodeGroup[]        @relation("CodeGroupCreator")
+  approvalRequests  ApprovalRequest[]  @relation("Requester")
+  approvalAssigned  ApprovalRequest[]  @relation("Approver")
+  approvalActions   ApprovalHistory[]
+
+  // Better Auth 세션 관리
+  sessions Session[]
+  accounts Account[]
+
+  @@map("users")
+}
+
+model Session {
+  id        String   @id @default(uuid())
+  userId    String
+  token     String   @unique
+  expiresAt DateTime
+  ipAddress String?
+  userAgent String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("sessions")
+}
+
+model Account {
+  id                    String    @id @default(uuid())
+  userId                String
+  accountId             String
+  providerId            String
+  accessToken           String?
+  refreshToken          String?
+  accessTokenExpiresAt  DateTime?
+  refreshTokenExpiresAt DateTime?
+  scope                 String?
+  idToken               String?
+  password              String?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("accounts")
+}
+
+model Verification {
+  id         String   @id @default(uuid())
+  identifier String
+  value      String
+  expiresAt  DateTime
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@map("verifications")
+}
+
+model Role {
+  id          String   @id @default(uuid())
+  name        RoleName @unique
+  description String
+  createdAt   DateTime @default(now())
+
+  users UserRole[]
+
+  @@map("roles")
+}
+
+model UserRole {
+  userId     String
+  roleId     String
+  assignedAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  role Role @relation(fields: [roleId], references: [id], onDelete: Cascade)
+
+  @@id([userId, roleId])
+  @@map("user_roles")
+}
+
+// ============================================
+// 표준 데이터 공통 상태
+// ============================================
+
+enum StandardStatus {
+  DRAFT
+  ACTIVE
+  DEPRECATED
+}
+
+// ============================================
+// 표준 도메인
+// ============================================
+
+model StandardDomain {
+  id                String         @id @default(uuid())
+  domainName        String         @unique
+  domainDescription String
+  dataType          String
+  length            Int?
+  scale             Int?
+  allowedValues     String?
+  status            StandardStatus @default(DRAFT)
+  createdBy         String
+  createdAt         DateTime       @default(now())
+  updatedAt         DateTime       @updatedAt
+
+  creator User           @relation("DomainCreator", fields: [createdBy], references: [id])
+  terms   StandardTerm[]
+
+  @@map("standard_domains")
+}
+
+// ============================================
+// 표준 용어
+// ============================================
+
+model StandardTerm {
+  id               String         @id @default(uuid())
+  termName         String
+  termEnglishName  String
+  termDescription  String
+  termAbbreviation String?
+  domainId         String
+  status           StandardStatus @default(DRAFT)
+  version          Int            @default(1)
+  createdBy        String
+  createdAt        DateTime       @default(now())
+  updatedAt        DateTime       @updatedAt
+
+  domain  StandardDomain @relation(fields: [domainId], references: [id])
+  creator User           @relation("TermCreator", fields: [createdBy], references: [id])
+
+  @@unique([termName, version])
+  @@map("standard_terms")
+}
+
+// ============================================
+// 표준 코드
+// ============================================
+
+model CodeGroup {
+  id               String         @id @default(uuid())
+  groupName        String         @unique
+  groupEnglishName String
+  groupDescription String
+  status           StandardStatus @default(DRAFT)
+  createdBy        String
+  createdAt        DateTime       @default(now())
+  updatedAt        DateTime       @updatedAt
+
+  creator User       @relation("CodeGroupCreator", fields: [createdBy], references: [id])
+  items   CodeItem[]
+
+  @@map("code_groups")
+}
+
+model CodeItem {
+  id              String   @id @default(uuid())
+  groupId         String
+  itemCode        String
+  itemName        String
+  itemDescription String?
+  sortOrder       Int      @default(0)
+  isActive        Boolean  @default(true)
+  createdAt       DateTime @default(now())
+
+  group CodeGroup @relation(fields: [groupId], references: [id], onDelete: Cascade)
+
+  @@unique([groupId, itemCode])
+  @@map("code_items")
+}
+
+// ============================================
+// 승인 워크플로우
+// ============================================
+
+enum TargetType {
+  TERM
+  DOMAIN
+  CODE_GROUP
+}
+
+enum RequestType {
+  CREATE
+  UPDATE
+  DELETE
+}
+
+enum ApprovalStatus {
+  PENDING
+  REVIEWING
+  APPROVED
+  REJECTED
+}
+
+enum ApprovalAction {
+  SUBMITTED
+  APPROVED
+  REJECTED
+  CANCELLED
+}
+
+model ApprovalRequest {
+  id             String         @id @default(uuid())
+  targetType     TargetType
+  targetId       String
+  requestType    RequestType
+  requesterId    String
+  approverId     String?
+  status         ApprovalStatus @default(PENDING)
+  requestComment String?
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+
+  requester User              @relation("Requester", fields: [requesterId], references: [id])
+  approver  User?             @relation("Approver", fields: [approverId], references: [id])
+  history   ApprovalHistory[]
+
+  @@map("approval_requests")
+}
+
+model ApprovalHistory {
+  id        String         @id @default(uuid())
+  requestId String
+  action    ApprovalAction
+  comment   String?
+  actorId   String
+  createdAt DateTime       @default(now())
+
+  request ApprovalRequest @relation(fields: [requestId], references: [id], onDelete: Cascade)
+  actor   User            @relation(fields: [actorId], references: [id])
+
+  @@map("approval_history")
+}
