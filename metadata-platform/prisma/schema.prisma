@@ -26,9 +26,10 @@ enum RoleName {
 model User {
   id         String     @id @default(uuid())
   email      String     @unique
-  password   String
-  name       String
-  department String?
+  password      String?
+  name          String
+  emailVerified Boolean  @default(false)
+  department    String?
   status     UserStatus @default(ACTIVE)
   createdAt  DateTime   @default(now())
   updatedAt  DateTime   @updatedAt

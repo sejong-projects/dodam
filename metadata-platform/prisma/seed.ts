@@ -2,7 +2,7 @@ import 'dotenv/config'
 import { PrismaClient } from '../src/generated/prisma/client.js'
 import { RoleName } from '../src/generated/prisma/enums.js'
 import { PrismaPg } from '@prisma/adapter-pg'
-import bcrypt from 'bcryptjs'
+import { hashPassword } from 'better-auth/crypto'
 
 const adapter = new PrismaPg({ connectionString: process.env.DATABASE_URL! })
 const prisma = new PrismaClient({ adapter })
@@ -33,16 +33,29 @@ async function main() {
   ])
 
   // 관리자 계정 생성
-  const hashedPassword = await bcrypt.hash('admin1234', 12)
+  const hashedPassword = await hashPassword('admin1234')
   const admin = await prisma.user.upsert({
     where: { email: 'admin@example.com' },
-    update: {},
+    update: { password: hashedPassword },
     create: {
       email: 'admin@example.com',
       password: hashedPassword,
       name: '시스템 관리자',
       department: '정보기술부',
       status: 'ACTIVE',
+    },
+  })
+
+  // 관리자 credential 계정 (Better Auth 인증용)
+  await prisma.account.upsert({
+    where: { id: `credential-${admin.id}` },
+    update: { password: hashedPassword },
+    create: {
+      id: `credential-${admin.id}`,
+      userId: admin.id,
+      accountId: admin.id,
+      providerId: 'credential',
+      password: hashedPassword,
     },
   })
 
@@ -55,16 +68,28 @@ async function main() {
   })
 
   // 테스트용 표준 담당자 계정
-  const managerPassword = await bcrypt.hash('manager1234', 12)
+  const managerPassword = await hashPassword('manager1234')
   const manager = await prisma.user.upsert({
     where: { email: 'manager@example.com' },
-    update: {},
+    update: { password: managerPassword },
     create: {
       email: 'manager@example.com',
       password: managerPassword,
       name: '표준 담당자',
       department: '데이터관리부',
       status: 'ACTIVE',
+    },
+  })
+
+  await prisma.account.upsert({
+    where: { id: `credential-${manager.id}` },
+    update: { password: managerPassword },
+    create: {
+      id: `credential-${manager.id}`,
+      userId: manager.id,
+      accountId: manager.id,
+      providerId: 'credential',
+      password: managerPassword,
     },
   })
 
@@ -76,16 +101,28 @@ async function main() {
   })
 
   // 테스트용 승인자 계정
-  const approverPassword = await bcrypt.hash('approver1234', 12)
+  const approverPassword = await hashPassword('approver1234')
   const approver = await prisma.user.upsert({
     where: { email: 'approver@example.com' },
-    update: {},
+    update: { password: approverPassword },
     create: {
       email: 'approver@example.com',
       password: approverPassword,
       name: '승인 담당자',
       department: '데이터관리부',
       status: 'ACTIVE',
+    },
+  })
+
+  await prisma.account.upsert({
+    where: { id: `credential-${approver.id}` },
+    update: { password: approverPassword },
+    create: {
+      id: `credential-${approver.id}`,
+      userId: approver.id,
+      accountId: approver.id,
+      providerId: 'credential',
+      password: approverPassword,
     },
   })
 
