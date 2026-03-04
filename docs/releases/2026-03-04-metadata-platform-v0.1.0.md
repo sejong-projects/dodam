@@ -3,13 +3,13 @@ title: 메타데이터 관리 플랫폼 v0.1.0 — 프로젝트 초기 구축
 version: 0.1.0
 date: 2026-03-04
 branch: feature/metadata-platform
-scope: Task 1 ~ Task 6 (구현 계획 v2 기준)
+scope: Task 1 ~ Task 7 (구현 계획 v2 기준)
 design_doc: docs/plans/2026-03-04-metadata-platform-impl-v2.md
 ---
 
 ## 개요
 
-메타데이터 관리 플랫폼의 기반 인프라를 구축했습니다. 프로젝트 초기 설정부터 데이터베이스 스키마, 인증 시스템, 로그인/회원가입 UI, TanStack Query 인프라, 대시보드 레이아웃까지 — 이후 CRUD 기능 개발을 위한 토대가 완성되었습니다.
+메타데이터 관리 플랫폼의 기반 인프라를 구축하고, 첫 번째 CRUD 기능인 표준 도메인 관리를 구현했습니다. 프로젝트 초기 설정부터 데이터베이스 스키마, 인증 시스템, 로그인/회원가입 UI, TanStack Query 인프라, 대시보드 레이아웃, 그리고 표준 도메인 CRUD(API + UI)까지 완성되었습니다.
 
 ---
 
@@ -165,12 +165,47 @@ design_doc: docs/plans/2026-03-04-metadata-platform-impl-v2.md
 
 ---
 
+### Task 7: 표준 도메인 CRUD (API + UI) — 레퍼런스 구현
+
+Task 8(용어), Task 9(코드)의 CRUD 패턴 기준이 되는 레퍼런스 구현.
+
+**검증 레이어:**
+- Zod 스키마 (`src/lib/validations/domain.ts`): `domainCreateSchema`, `domainUpdateSchema` (`.partial()` 패턴)
+- API 인증 헬퍼 (`src/lib/auth/require-role.ts`): `requireAuth()`, `requireRole()` — discriminated union 패턴
+
+**API Routes:**
+- `GET /api/domains` — 목록 조회 (검색, 상태 필터, 페이지네이션)
+- `POST /api/domains` — 등록 (ADMIN, STANDARD_MANAGER 역할 필요, 중복 검사)
+- `GET /api/domains/:id` — 상세 조회 (연결된 표준 용어 포함)
+- `PUT /api/domains/:id` — 수정
+- `DELETE /api/domains/:id` — 삭제 (연결된 용어가 있으면 거부)
+
+**공통 UI 컴포넌트 (Task 8, 9에서 재사용):**
+- `StatusBadge` (`src/components/shared/status-badge.tsx`): DRAFT/ACTIVE/DEPRECATED 상태 표시
+- `DataTablePagination` (`src/components/shared/data-table-pagination.tsx`): 이전/다음 페이지 이동
+
+**도메인 UI:**
+- `DomainTable` (`src/components/domain/domain-table.tsx`): 목록 테이블, 행 클릭 시 상세 이동
+- `DomainForm` (`src/components/domain/domain-form.tsx`): 생성/수정 겸용 폼 (react-hook-form + Zod)
+
+**페이지:**
+- `/domains` — 목록 (클라이언트 컴포넌트, TanStack Query)
+- `/domains/new` — 등록
+- `/domains/[id]` — 상세 (서버 컴포넌트, Prisma 직접 호출)
+- `/domains/[id]/edit` — 수정 (서버 컴포넌트에서 데이터 fetch → 클라이언트 폼으로 전달)
+
+**계획서 대비 수정 사항:**
+- `@prisma/client` → `@/generated/prisma/client` (Prisma 7 호환)
+- `parsed.error.errors` → `parsed.error.issues` (Zod 4 API 변경)
+- 모든 API 핸들러에 try-catch 추가 (CLAUDE.md 규칙)
+
+---
+
 ## 남은 작업
 
 | Task | 설명 | 상태 |
 |------|------|------|
-| Task 6 | 대시보드 레이아웃 (Sidebar + Header) | 완료 |
-| Task 7 | 표준 도메인 CRUD (API + UI) | 대기 |
+| Task 7 | 표준 도메인 CRUD (API + UI) | 완료 |
 | Task 8 | 표준 용어 CRUD (API + UI) | 대기 |
 | Task 9 | 표준 코드 CRUD (API + UI) | 대기 |
 | Task 10 | 승인 워크플로우 (API + UI) | 대기 |
@@ -195,20 +230,35 @@ metadata-platform/
 │   │   │   └── signup/page.tsx     # 회원가입
 │   │   ├── (dashboard)/
 │   │   │   ├── layout.tsx          # 대시보드 레이아웃 (Sidebar + Header)
+│   │   │   ├── domains/
+│   │   │   │   ├── page.tsx        # 표준 도메인 목록 (TanStack Query)
+│   │   │   │   ├── new/page.tsx    # 도메인 등록
+│   │   │   │   └── [id]/
+│   │   │   │       ├── page.tsx    # 도메인 상세 (서버 컴포넌트)
+│   │   │   │       └── edit/page.tsx # 도메인 수정
 │   │   │   ├── standards/page.tsx  # 표준 용어 (플레이스홀더)
-│   │   │   ├── domains/page.tsx    # 표준 도메인 (플레이스홀더)
 │   │   │   ├── codes/page.tsx      # 표준 코드 (플레이스홀더)
 │   │   │   ├── workflow/page.tsx   # 승인 관리 (플레이스홀더)
 │   │   │   └── admin/users/page.tsx # 사용자 관리 (플레이스홀더)
-│   │   ├── api/auth/[...all]/
-│   │   │   └── route.ts            # Better Auth API
+│   │   ├── api/
+│   │   │   ├── auth/[...all]/
+│   │   │   │   └── route.ts        # Better Auth API
+│   │   │   └── domains/
+│   │   │       ├── route.ts        # GET 목록 + POST 생성
+│   │   │       └── [id]/route.ts   # GET 상세 + PUT 수정 + DELETE 삭제
 │   │   ├── layout.tsx              # 루트 레이아웃
 │   │   └── page.tsx                # / → /login 리다이렉트
 │   ├── components/
+│   │   ├── domain/
+│   │   │   ├── domain-table.tsx    # 도메인 목록 테이블
+│   │   │   └── domain-form.tsx     # 도메인 생성/수정 폼
 │   │   ├── layout/
 │   │   │   ├── app-sidebar.tsx     # 사이드바 (역할 기반 메뉴)
 │   │   │   ├── app-header.tsx      # 헤더 (트리거 + 타이틀 + 사용자 메뉴)
 │   │   │   └── user-nav.tsx        # 사용자 아바타 드롭다운
+│   │   ├── shared/
+│   │   │   ├── status-badge.tsx    # 상태 배지 (DRAFT/ACTIVE/DEPRECATED)
+│   │   │   └── data-table-pagination.tsx # 페이지네이션
 │   │   └── ui/                     # shadcn/ui 컴포넌트 (21종)
 │   ├── generated/prisma/           # Prisma 생성 코드 (.gitignore)
 │   ├── lib/
@@ -218,12 +268,15 @@ metadata-platform/
 │   │   │   ├── index.ts            # Better Auth 서버 설정
 │   │   │   ├── client.ts           # Better Auth 클라이언트
 │   │   │   ├── actions.ts          # RBAC 서버 액션
-│   │   │   └── get-session.ts      # 서버 사이드 세션 헬퍼
+│   │   │   ├── get-session.ts      # 서버 사이드 세션 헬퍼
+│   │   │   └── require-role.ts     # API 인증/인가 헬퍼
 │   │   ├── db/
 │   │   │   └── prisma.ts           # Prisma 싱글톤 클라이언트
 │   │   ├── query/
 │   │   │   ├── keys.ts             # Query Key Factory
 │   │   │   └── provider.tsx        # QueryProvider (TanStack Query)
+│   │   ├── validations/
+│   │   │   └── domain.ts           # Zod 검증 스키마 (도메인)
 │   │   └── utils.ts                # cn() 유틸리티
 │   ├── hooks/
 │   │   └── use-mobile.ts           # 모바일 감지 훅 (shadcn sidebar용)
