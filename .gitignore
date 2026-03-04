@@ -105,5 +105,8 @@ $RECYCLE.BIN/
 ### Worktrees ###
 .worktrees/
 
+### playwright ###
+.playwright-mcp/
 
 # End of https://www.toptal.com/developers/gitignore/api/macos,windows,linux,visualstudiocode
+
