@@ -98,6 +98,10 @@ $RECYCLE.BIN/
 # config dir
 .obsidian/
 
+### Claude Code ###
+# Local settings (permissions, plugins, output style) are user-specific
+.claude/
+
 ### Worktrees ###
 .worktrees/
 
