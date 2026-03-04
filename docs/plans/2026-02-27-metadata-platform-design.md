@@ -6,7 +6,7 @@
 
 **Architecture:** Next.js 16.1 풀스택 모노리스 구조. App Router 기반으로 프론트엔드와 API를 하나의 프로젝트에서 관리하며, Prisma + PostgreSQL로 데이터를 저장한다. MVP는 표준 용어/도메인/코드 관리 + 승인 워크플로우에 집중하고, 이후 검증 → 범정부 연계 → AI 순으로 확장한다.
 
-**Tech Stack:** Next.js 16.1, TypeScript, PostgreSQL 16, Prisma 6, Auth.js v5, shadcn/ui, Tailwind CSS 4, TanStack Query v5, Vitest, Playwright
+**Tech Stack:** Next.js 16.1, TypeScript 5.9, PostgreSQL 18, Prisma 7, Better Auth, shadcn/ui, Tailwind CSS 4.2, TanStack Query v5, Vitest 4, Playwright
 
 ---
 
@@ -37,15 +37,15 @@
 |---|---|---|
 | Next.js | 16.1 | 풀스택 프레임워크 (App Router) |
 | React | 19 | UI 라이브러리 |
-| TypeScript | 5.x | 타입 안전성 |
-| Prisma | 6.x | ORM (PostgreSQL) |
-| PostgreSQL | 16 | 데이터베이스 |
-| Auth.js | v5 | 인증 + 세션 관리 |
-| shadcn/ui | latest | UI 컴포넌트 라이브러리 |
-| Tailwind CSS | 4.x | 스타일링 |
+| TypeScript | 5.9 | 타입 안전성 |
+| Prisma | 7.x | ORM (PostgreSQL), ESM 전용, 드라이버 어댑터 방식 |
+| PostgreSQL | 18 | 데이터베이스 (새 I/O 서브시스템, 최대 3배 성능 향상) |
+| Better Auth | latest | 인증 + 세션 관리 (Auth.js v5 후속, Prisma 어댑터 지원) |
+| shadcn/ui | latest | UI 컴포넌트 라이브러리 (통합 radix-ui 패키지) |
+| Tailwind CSS | 4.2 | 스타일링 |
 | TanStack Query | v5 | 서버 상태 관리 (캐싱, 페이징) |
 | Turbopack | built-in | 개발 서버 번들러 (Next.js 16 내장) |
-| Vitest | latest | 단위/통합 테스트 |
+| Vitest | 4.x | 단위/통합 테스트 (Browser Mode 안정화) |
 | Playwright | latest | E2E 테스트 |
 
 ---
@@ -91,7 +91,8 @@ metadata-platform/
 ├── package.json
 ├── tsconfig.json
 ├── next.config.ts
-└── middleware.ts                    # 인증 미들웨어 (라우트 보호)
+├── prisma.config.ts                # Prisma 7 설정 (DB 연결, 마이그레이션)
+└── proxy.ts                        # 라우트 보호 프록시 (Next.js 16, Node.js 런타임)
 ```
 
 ---
@@ -264,11 +265,14 @@ metadata-platform/
 
 ### 5.5 인증/사용자 API
 
+> Better Auth는 `/api/auth/[...all]` 라우트를 통해 인증 엔드포인트를 자동 생성한다.
+
 | 메서드 | 경로 | 설명 | 권한 |
 |---|---|---|---|
-| POST | `/api/auth/login` | 로그인 | 공개 |
-| POST | `/api/auth/signup` | 회원가입 | 공개 |
-| POST | `/api/auth/logout` | 로그아웃 | 인증됨 |
+| POST | `/api/auth/sign-in/email` | 이메일 로그인 (Better Auth 내장) | 공개 |
+| POST | `/api/auth/sign-up/email` | 이메일 회원가입 (Better Auth 내장) | 공개 |
+| POST | `/api/auth/sign-out` | 로그아웃 (Better Auth 내장) | 인증됨 |
+| GET | `/api/auth/get-session` | 세션 조회 (Better Auth 내장) | 인증됨 |
 | GET | `/api/admin/users` | 사용자 목록 | ADMIN |
 | PUT | `/api/admin/users/:id/role` | 역할 변경 | ADMIN |
 
@@ -375,9 +379,11 @@ Phase 4: AI 기반 확장
 | 결정 | 이유 |
 |---|---|
 | Next.js 풀스택 모노리스 | MVP 속도 우선. 나중에 백엔드 분리 가능 |
-| Prisma ORM | 타입 안전 쿼리, 마이그레이션 관리 용이 |
-| Auth.js v5 | Next.js 공식 권장 인증 라이브러리 |
-| shadcn/ui | 커스터마이징 가능한 UI 컴포넌트, 복사-붙여넣기 방식 |
+| Prisma 7 ORM | 타입 안전 쿼리, ESM 네이티브, 드라이버 어댑터로 유연한 DB 연결 |
+| PostgreSQL 18 | 새 I/O 서브시스템으로 최대 3배 성능 향상, 메이저 업그레이드 가속화 |
+| Better Auth | Auth.js v5가 stable 미출시 상태에서 Better Auth로 합류. Prisma 어댑터 공식 지원, 활발한 유지보수 |
+| proxy.ts (Next.js 16) | middleware.ts에서 이름 변경. Node.js 런타임으로 전환, CVE-2025-29927 보안 대응 |
+| shadcn/ui | 커스터마이징 가능한 UI 컴포넌트, 통합 radix-ui 패키지 지원 |
 | 다형적 승인 테이블 | 용어/도메인/코드에 대해 하나의 승인 시스템으로 처리 |
 | RBAC (역할 기반 권한) | 공공/금융권 표준 권한 모델 |
 | 새 리포지토리 | dodam은 문서 저장소로 유지, 플랫폼은 독립 프로젝트 |

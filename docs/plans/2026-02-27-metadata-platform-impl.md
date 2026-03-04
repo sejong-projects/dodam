@@ -4,9 +4,9 @@
 
 **Goal:** 표준 용어/도메인/코드를 관리하고 승인 워크플로우를 지원하는 메타데이터 관리 웹 플랫폼 MVP 구축
 
-**Architecture:** Next.js 16.1 풀스택 모노리스. App Router 기반 프론트엔드 + API Routes 백엔드, Prisma ORM + PostgreSQL 데이터 레이어, Auth.js v5 인증 + RBAC 권한 관리. shadcn/ui + Tailwind CSS 4 UI 스타일링.
+**Architecture:** Next.js 16.1 풀스택 모노리스. App Router 기반 프론트엔드 + API Routes 백엔드, Prisma 7 ORM + PostgreSQL 18 데이터 레이어 (드라이버 어댑터 방식), Better Auth 인증 + RBAC 권한 관리. shadcn/ui + Tailwind CSS 4.2 UI 스타일링. proxy.ts로 라우트 보호 (Next.js 16).
 
-**Tech Stack:** Next.js 16.1, TypeScript 5, PostgreSQL 16, Prisma 6, Auth.js v5, shadcn/ui, Tailwind CSS 4, TanStack Query v5, Vitest, Playwright
+**Tech Stack:** Next.js 16.1, TypeScript 5.9, PostgreSQL 18, Prisma 7, Better Auth, shadcn/ui, Tailwind CSS 4.2, TanStack Query v5, Vitest 4, Playwright
 
 **설계 문서:** `docs/plans/2026-02-27-metadata-platform-design.md` 참조
 
@@ -42,11 +42,12 @@ npx create-next-app@latest metadata-platform --typescript --tailwind --eslint --
 
 ```bash
 cd C:/Users/jhkim/Desktop/metadata-platform
-npm install prisma @prisma/client next-auth@beta @auth/prisma-adapter
+npm install prisma @prisma/client @prisma/adapter-pg pg
+npm install better-auth
 npm install @tanstack/react-query @tanstack/react-query-devtools
 npm install zod react-hook-form @hookform/resolvers
 npm install bcryptjs
-npm install -D @types/bcryptjs vitest @vitejs/plugin-react jsdom @testing-library/react @testing-library/jest-dom
+npm install -D @types/bcryptjs @types/pg vitest@4 @vitejs/plugin-react jsdom @testing-library/react @testing-library/jest-dom
 ```
 
 **Step 3: shadcn/ui 초기화**
@@ -145,7 +146,7 @@ Expected: 브라우저에서 `http://localhost:3000`에 Next.js 기본 페이지
 
 ```bash
 git add -A
-git commit -m "chore: initial project setup with Next.js 16.1, Tailwind CSS 4, shadcn/ui"
+git commit -m "chore: initial project setup with Next.js 16.1, Tailwind CSS 4.2, shadcn/ui, Prisma 7, Better Auth"
 ```
 
 ---
@@ -165,7 +166,7 @@ psql -U postgres -c "CREATE DATABASE metadata_platform;"
 
 또는 Docker를 사용하는 경우:
 ```bash
-docker run --name metadata-pg -e POSTGRES_PASSWORD=password -e POSTGRES_DB=metadata_platform -p 5432:5432 -d postgres:16
+docker run --name metadata-pg -e POSTGRES_PASSWORD=password -e POSTGRES_DB=metadata_platform -p 5432:5432 -d postgres:18
 ```
 
 **Step 2: Prisma 초기화 및 스키마 작성**
@@ -182,7 +183,6 @@ generator client {
 
 datasource db {
   provider = "postgresql"
-  url      = env("DATABASE_URL")
 }
 
 // ============================================
@@ -407,12 +407,14 @@ model ApprovalHistory {
 `src/lib/db/prisma.ts`:
 ```typescript
 import { PrismaClient } from '@prisma/client'
+import { PrismaPg } from '@prisma/adapter-pg'
 
 const globalForPrisma = globalThis as unknown as {
   prisma: PrismaClient | undefined
 }
 
-export const prisma = globalForPrisma.prisma ?? new PrismaClient()
+const adapter = new PrismaPg({ connectionString: process.env.DATABASE_URL! })
+export const prisma = globalForPrisma.prisma ?? new PrismaClient({ adapter })
 
 if (process.env.NODE_ENV !== 'production') globalForPrisma.prisma = prisma
 ```
@@ -538,18 +540,18 @@ Expected: 브라우저에서 DB 테이블과 시드 데이터 확인 가능
 
 ```bash
 git add -A
-git commit -m "feat: add Prisma schema with User, Role, StandardTerm, StandardDomain, CodeGroup, ApprovalRequest models and seed data"
+git commit -m "feat: add Prisma 7 schema with User, Role, StandardTerm, StandardDomain, CodeGroup, ApprovalRequest models and seed data"
 ```
 
 ---
 
-## Task 3: 인증 시스템 (Auth.js v5)
+## Task 3: 인증 시스템 (Better Auth)
 
 **Files:**
-- Create: `src/lib/auth/auth.config.ts`
-- Create: `src/lib/auth/index.ts`
-- Create: `src/app/api/auth/[...nextauth]/route.ts`
-- Create: `src/middleware.ts`
+- Create: `src/lib/auth/index.ts` (Better Auth 서버 설정)
+- Create: `src/lib/auth/client.ts` (Better Auth 클라이언트)
+- Create: `src/app/api/auth/[...all]/route.ts`
+- Create: `src/proxy.ts` (라우트 보호, Next.js 16)
 - Create: `src/lib/auth/actions.ts` (서버 액션: 로그인, 회원가입)
 - Create: `src/types/auth.ts`
 
@@ -567,234 +569,126 @@ export type SessionUser = {
 }
 ```
 
-**Step 2: Auth.js 설정**
-
-`src/lib/auth/auth.config.ts`:
-```typescript
-import type { NextAuthConfig } from 'next-auth'
-
-export const authConfig = {
-  pages: {
-    signIn: '/login',
-  },
-  callbacks: {
-    authorized({ auth, request: { nextUrl } }) {
-      const isLoggedIn = !!auth?.user
-      const isOnDashboard = nextUrl.pathname.startsWith('/standards') ||
-        nextUrl.pathname.startsWith('/domains') ||
-        nextUrl.pathname.startsWith('/codes') ||
-        nextUrl.pathname.startsWith('/workflow') ||
-        nextUrl.pathname.startsWith('/admin')
-
-      if (isOnDashboard) {
-        if (isLoggedIn) return true
-        return false // 로그인 페이지로 리다이렉트
-      }
-
-      if (isLoggedIn && (nextUrl.pathname === '/login' || nextUrl.pathname === '/signup')) {
-        return Response.redirect(new URL('/standards', nextUrl))
-      }
-
-      return true
-    },
-  },
-  providers: [],
-} satisfies NextAuthConfig
-```
+**Step 2: Better Auth 서버 설정**
 
 `src/lib/auth/index.ts`:
 ```typescript
-import NextAuth from 'next-auth'
-import Credentials from 'next-auth/providers/credentials'
-import bcrypt from 'bcryptjs'
+import { betterAuth } from 'better-auth'
+import { prismaAdapter } from 'better-auth/adapters/prisma'
 import { prisma } from '@/lib/db/prisma'
-import { authConfig } from './auth.config'
-import type { SessionUser } from '@/types/auth'
 
-export const { handlers, auth, signIn, signOut } = NextAuth({
-  ...authConfig,
-  providers: [
-    Credentials({
-      async authorize(credentials) {
-        const { email, password } = credentials as {
-          email: string
-          password: string
-        }
-
-        const user = await prisma.user.findUnique({
-          where: { email },
-          include: {
-            roles: {
-              include: { role: true },
-            },
-          },
-        })
-
-        if (!user) return null
-
-        const passwordMatch = await bcrypt.compare(password, user.password)
-        if (!passwordMatch) return null
-
-        return {
-          id: user.id,
-          email: user.email,
-          name: user.name,
-          roles: user.roles.map((ur) => ur.role.name),
-        } as SessionUser
-      },
-    }),
-  ],
-  callbacks: {
-    ...authConfig.callbacks,
-    async jwt({ token, user }) {
-      if (user) {
-        token.id = (user as SessionUser).id
-        token.roles = (user as SessionUser).roles
-      }
-      return token
-    },
-    async session({ session, token }) {
-      if (session.user) {
-        session.user.id = token.id as string
-        session.user.roles = token.roles as string[]
-      }
-      return session
+export const auth = betterAuth({
+  database: prismaAdapter(prisma, { provider: 'postgresql' }),
+  emailAndPassword: {
+    enabled: true,
+    minPasswordLength: 8,
+  },
+  session: {
+    strategy: 'jwt',
+  },
+  user: {
+    additionalFields: {
+      department: { type: 'string', required: false },
     },
   },
-  session: { strategy: 'jwt' },
 })
 ```
 
-**Step 3: Auth API 라우트**
+**Step 3: Better Auth 클라이언트**
 
-`src/app/api/auth/[...nextauth]/route.ts`:
+`src/lib/auth/client.ts`:
 ```typescript
-import { handlers } from '@/lib/auth'
+import { createAuthClient } from 'better-auth/react'
 
-export const { GET, POST } = handlers
+export const authClient = createAuthClient({
+  baseURL: process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000',
+})
 ```
 
-**Step 4: 미들웨어 (라우트 보호)**
+**Step 4: Auth API 라우트**
 
-`src/middleware.ts`:
+`src/app/api/auth/[...all]/route.ts`:
 ```typescript
-export { auth as middleware } from '@/lib/auth'
+import { auth } from '@/lib/auth'
+import { toNextJsHandler } from 'better-auth/next-js'
+
+export const { GET, POST } = toNextJsHandler(auth)
+```
+
+**Step 5: 라우트 보호 프록시 (Next.js 16)**
+
+`src/proxy.ts`:
+```typescript
+import { auth } from '@/lib/auth'
+import { NextRequest, NextResponse } from 'next/server'
+
+const protectedPaths = ['/standards', '/domains', '/codes', '/workflow', '/admin']
+const authPaths = ['/login', '/signup']
+
+export default async function proxy(request: NextRequest) {
+  const { pathname } = request.nextUrl
+  const session = await auth.api.getSession({ headers: request.headers })
+  const isLoggedIn = !!session?.user
+
+  const isProtected = protectedPaths.some((path) => pathname.startsWith(path))
+  if (isProtected && !isLoggedIn) {
+    return NextResponse.redirect(new URL('/login', request.url))
+  }
+
+  const isAuthPage = authPaths.some((path) => pathname === path)
+  if (isAuthPage && isLoggedIn) {
+    return NextResponse.redirect(new URL('/standards', request.url))
+  }
+
+  return NextResponse.next()
+}
 
 export const config = {
   matcher: ['/((?!api/auth|_next/static|_next/image|favicon.ico).*)'],
 }
 ```
 
-**Step 5: 서버 액션 (로그인/회원가입)**
+**Step 6: 서버 액션 (로그인/회원가입)**
+
+> Better Auth는 클라이언트 측에서 `authClient.signIn.email()`, `authClient.signUp.email()`을 직접 호출할 수 있으므로, 서버 액션은 RBAC 역할 부여 등 추가 로직이 필요한 경우에만 사용한다.
 
 `src/lib/auth/actions.ts`:
 ```typescript
 'use server'
 
-import { signIn, signOut } from '@/lib/auth'
 import { prisma } from '@/lib/db/prisma'
-import bcrypt from 'bcryptjs'
-import { z } from 'zod'
 import { RoleName } from '@prisma/client'
 
-const loginSchema = z.object({
-  email: z.string().email('유효한 이메일을 입력하세요'),
-  password: z.string().min(1, '비밀번호를 입력하세요'),
-})
-
-const signupSchema = z.object({
-  email: z.string().email('유효한 이메일을 입력하세요'),
-  password: z.string().min(8, '비밀번호는 8자 이상이어야 합니다'),
-  name: z.string().min(2, '이름은 2자 이상이어야 합니다'),
-  department: z.string().optional(),
-})
-
-export async function loginAction(formData: FormData) {
-  const parsed = loginSchema.safeParse({
-    email: formData.get('email'),
-    password: formData.get('password'),
-  })
-
-  if (!parsed.success) {
-    return { error: parsed.error.errors[0].message }
-  }
-
-  try {
-    await signIn('credentials', {
-      email: parsed.data.email,
-      password: parsed.data.password,
-      redirectTo: '/standards',
-    })
-  } catch (error: unknown) {
-    if ((error as Error).message?.includes('NEXT_REDIRECT')) throw error
-    return { error: '이메일 또는 비밀번호가 올바르지 않습니다' }
-  }
-}
-
-export async function signupAction(formData: FormData) {
-  const parsed = signupSchema.safeParse({
-    email: formData.get('email'),
-    password: formData.get('password'),
-    name: formData.get('name'),
-    department: formData.get('department'),
-  })
-
-  if (!parsed.success) {
-    return { error: parsed.error.errors[0].message }
-  }
-
-  const existing = await prisma.user.findUnique({
-    where: { email: parsed.data.email },
-  })
-
-  if (existing) {
-    return { error: '이미 등록된 이메일입니다' }
-  }
-
-  const hashedPassword = await bcrypt.hash(parsed.data.password, 12)
-
-  const user = await prisma.user.create({
-    data: {
-      email: parsed.data.email,
-      password: hashedPassword,
-      name: parsed.data.name,
-      department: parsed.data.department || null,
-    },
-  })
-
-  // 기본 역할 부여 (VIEWER)
+// 회원가입 후 기본 역할(VIEWER) 부여를 위한 서버 액션
+export async function assignDefaultRole(userId: string) {
   const viewerRole = await prisma.role.findUnique({
     where: { name: RoleName.VIEWER },
   })
 
   if (viewerRole) {
-    await prisma.userRole.create({
-      data: { userId: user.id, roleId: viewerRole.id },
+    await prisma.userRole.upsert({
+      where: { userId_roleId: { userId, roleId: viewerRole.id } },
+      update: {},
+      create: { userId, roleId: viewerRole.id },
     })
-  }
-
-  try {
-    await signIn('credentials', {
-      email: parsed.data.email,
-      password: parsed.data.password,
-      redirectTo: '/standards',
-    })
-  } catch (error: unknown) {
-    if ((error as Error).message?.includes('NEXT_REDIRECT')) throw error
-    return { error: '회원가입은 완료되었으나 로그인에 실패했습니다' }
   }
 }
 
-export async function logoutAction() {
-  await signOut({ redirectTo: '/login' })
+// 사용자 역할 조회
+export async function getUserRoles(userId: string): Promise<RoleName[]> {
+  const userRoles = await prisma.userRole.findMany({
+    where: { userId },
+    include: { role: true },
+  })
+  return userRoles.map((ur) => ur.role.name)
 }
 ```
 
-**Step 6: 커밋**
+**Step 7: 커밋**
 
 ```bash
 git add -A
-git commit -m "feat: add Auth.js v5 authentication with credentials provider, RBAC session, and signup/login server actions"
+git commit -m "feat: add Better Auth authentication with Prisma adapter, proxy.ts route protection, and RBAC actions"
 ```
 
 ---
@@ -829,21 +723,38 @@ export default function AuthLayout({
 ```typescript
 'use client'
 
-import { useActionState } from 'react'
+import { useState } from 'react'
+import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { loginAction } from '@/lib/auth/actions'
+import { authClient } from '@/lib/auth/client'
 
 export default function LoginPage() {
-  const [state, formAction, isPending] = useActionState(
-    async (_prevState: { error?: string } | undefined, formData: FormData) => {
-      return await loginAction(formData)
-    },
-    undefined,
-  )
+  const router = useRouter()
+  const [error, setError] = useState<string>()
+  const [isPending, setIsPending] = useState(false)
+
+  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault()
+    setIsPending(true)
+    setError(undefined)
+
+    const formData = new FormData(e.currentTarget)
+    const { error } = await authClient.signIn.email({
+      email: formData.get('email') as string,
+      password: formData.get('password') as string,
+    })
+
+    if (error) {
+      setError('이메일 또는 비밀번호가 올바르지 않습니다')
+      setIsPending(false)
+    } else {
+      router.push('/standards')
+    }
+  }
 
   return (
     <Card>
@@ -852,7 +763,7 @@ export default function LoginPage() {
         <CardDescription>메타데이터 관리 플랫폼에 로그인하세요</CardDescription>
       </CardHeader>
       <CardContent>
-        <form action={formAction} className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="email">이메일</Label>
             <Input id="email" name="email" type="email" placeholder="email@example.com" required />
@@ -861,8 +772,8 @@ export default function LoginPage() {
             <Label htmlFor="password">비밀번호</Label>
             <Input id="password" name="password" type="password" required />
           </div>
-          {state?.error && (
-            <p className="text-sm text-red-500">{state.error}</p>
+          {error && (
+            <p className="text-sm text-red-500">{error}</p>
           )}
           <Button type="submit" className="w-full" disabled={isPending}>
             {isPending ? '로그인 중...' : '로그인'}
@@ -886,21 +797,46 @@ export default function LoginPage() {
 ```typescript
 'use client'
 
-import { useActionState } from 'react'
+import { useState } from 'react'
+import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { signupAction } from '@/lib/auth/actions'
+import { authClient } from '@/lib/auth/client'
+import { assignDefaultRole } from '@/lib/auth/actions'
 
 export default function SignupPage() {
-  const [state, formAction, isPending] = useActionState(
-    async (_prevState: { error?: string } | undefined, formData: FormData) => {
-      return await signupAction(formData)
-    },
-    undefined,
-  )
+  const router = useRouter()
+  const [error, setError] = useState<string>()
+  const [isPending, setIsPending] = useState(false)
+
+  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault()
+    setIsPending(true)
+    setError(undefined)
+
+    const formData = new FormData(e.currentTarget)
+    const { data, error } = await authClient.signUp.email({
+      email: formData.get('email') as string,
+      password: formData.get('password') as string,
+      name: formData.get('name') as string,
+    })
+
+    if (error) {
+      setError(error.message || '회원가입에 실패했습니다')
+      setIsPending(false)
+      return
+    }
+
+    // 기본 역할 부여 (VIEWER)
+    if (data?.user?.id) {
+      await assignDefaultRole(data.user.id)
+    }
+
+    router.push('/standards')
+  }
 
   return (
     <Card>
@@ -909,7 +845,7 @@ export default function SignupPage() {
         <CardDescription>새 계정을 만들어 시작하세요</CardDescription>
       </CardHeader>
       <CardContent>
-        <form action={formAction} className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="name">이름</Label>
             <Input id="name" name="name" placeholder="홍길동" required />
@@ -926,8 +862,8 @@ export default function SignupPage() {
             <Label htmlFor="department">소속 부서 (선택)</Label>
             <Input id="department" name="department" placeholder="정보기술부" />
           </div>
-          {state?.error && (
-            <p className="text-sm text-red-500">{state.error}</p>
+          {error && (
+            <p className="text-sm text-red-500">{error}</p>
           )}
           <Button type="submit" className="w-full" disabled={isPending}>
             {isPending ? '가입 중...' : '회원가입'}
@@ -975,14 +911,23 @@ git commit -m "feat: add login and signup pages with server actions"
 `src/lib/auth/get-session.ts`:
 ```typescript
 import { auth } from '@/lib/auth'
+import { headers } from 'next/headers'
 import { redirect } from 'next/navigation'
 import type { SessionUser } from '@/types/auth'
 import { RoleName } from '@prisma/client'
+import { getUserRoles } from './actions'
 
-export async function getSession() {
-  const session = await auth()
+export async function getSession(): Promise<SessionUser> {
+  const session = await auth.api.getSession({ headers: await headers() })
   if (!session?.user) redirect('/login')
-  return session.user as SessionUser
+
+  const roles = await getUserRoles(session.user.id)
+  return {
+    id: session.user.id,
+    email: session.user.email,
+    name: session.user.name,
+    roles,
+  }
 }
 
 export function hasRole(user: SessionUser, role: RoleName): boolean {
@@ -1095,7 +1040,8 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { Button } from '@/components/ui/button'
-import { logoutAction } from '@/lib/auth/actions'
+import { authClient } from '@/lib/auth/client'
+import { useRouter } from 'next/navigation'
 
 interface UserNavProps {
   userName: string
@@ -1103,6 +1049,7 @@ interface UserNavProps {
 }
 
 export function UserNav({ userName, userEmail }: UserNavProps) {
+  const router = useRouter()
   const initials = userName
     .split(' ')
     .map((n) => n[0])
@@ -1129,7 +1076,8 @@ export function UserNav({ userName, userEmail }: UserNavProps) {
         <DropdownMenuSeparator />
         <DropdownMenuItem
           onClick={async () => {
-            await logoutAction()
+            await authClient.signOut()
+            router.push('/login')
           }}
         >
           로그아웃
@@ -1255,11 +1203,12 @@ export type DomainUpdateInput = z.infer<typeof domainUpdateSchema>
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/db/prisma'
 import { auth } from '@/lib/auth'
+import { headers } from 'next/headers'
 import { domainCreateSchema } from '@/lib/validations/domain'
 
 // GET /api/domains - 목록 조회
 export async function GET(request: NextRequest) {
-  const session = await auth()
+  const session = await auth.api.getSession({ headers: await headers() })
   if (!session?.user) {
     return NextResponse.json({ error: { code: 'UNAUTHORIZED', message: '인증이 필요합니다' } }, { status: 401 })
   }
@@ -1299,12 +1248,13 @@ export async function GET(request: NextRequest) {
 
 // POST /api/domains - 등록
 export async function POST(request: NextRequest) {
-  const session = await auth()
+  const session = await auth.api.getSession({ headers: await headers() })
   if (!session?.user) {
     return NextResponse.json({ error: { code: 'UNAUTHORIZED', message: '인증이 필요합니다' } }, { status: 401 })
   }
 
-  const roles = (session.user as { roles?: string[] }).roles || []
+  const { getUserRoles } = await import('@/lib/auth/actions')
+  const roles = await getUserRoles(session.user.id)
   if (!roles.includes('ADMIN') && !roles.includes('STANDARD_MANAGER')) {
     return NextResponse.json({ error: { code: 'FORBIDDEN', message: '표준 담당자 이상의 권한이 필요합니다' } }, { status: 403 })
   }
@@ -1340,6 +1290,7 @@ export async function POST(request: NextRequest) {
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/db/prisma'
 import { auth } from '@/lib/auth'
+import { headers } from 'next/headers'
 import { domainUpdateSchema } from '@/lib/validations/domain'
 
 // GET /api/domains/:id - 상세 조회
@@ -1347,7 +1298,7 @@ export async function GET(
   _request: NextRequest,
   { params }: { params: Promise<{ id: string }> },
 ) {
-  const session = await auth()
+  const session = await auth.api.getSession({ headers: await headers() })
   if (!session?.user) {
     return NextResponse.json({ error: { code: 'UNAUTHORIZED', message: '인증이 필요합니다' } }, { status: 401 })
   }
@@ -1374,12 +1325,13 @@ export async function PUT(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> },
 ) {
-  const session = await auth()
+  const session = await auth.api.getSession({ headers: await headers() })
   if (!session?.user) {
     return NextResponse.json({ error: { code: 'UNAUTHORIZED', message: '인증이 필요합니다' } }, { status: 401 })
   }
 
-  const roles = (session.user as { roles?: string[] }).roles || []
+  const { getUserRoles } = await import('@/lib/auth/actions')
+  const roles = await getUserRoles(session.user.id)
   if (!roles.includes('ADMIN') && !roles.includes('STANDARD_MANAGER')) {
     return NextResponse.json({ error: { code: 'FORBIDDEN', message: '표준 담당자 이상의 권한이 필요합니다' } }, { status: 403 })
   }
@@ -1405,12 +1357,13 @@ export async function DELETE(
   _request: NextRequest,
   { params }: { params: Promise<{ id: string }> },
 ) {
-  const session = await auth()
+  const session = await auth.api.getSession({ headers: await headers() })
   if (!session?.user) {
     return NextResponse.json({ error: { code: 'UNAUTHORIZED', message: '인증이 필요합니다' } }, { status: 401 })
   }
 
-  const roles = (session.user as { roles?: string[] }).roles || []
+  const { getUserRoles } = await import('@/lib/auth/actions')
+  const roles = await getUserRoles(session.user.id)
   if (!roles.includes('ADMIN') && !roles.includes('STANDARD_MANAGER')) {
     return NextResponse.json({ error: { code: 'FORBIDDEN', message: '표준 담당자 이상의 권한이 필요합니다' } }, { status: 403 })
   }
@@ -1740,16 +1693,18 @@ git commit -m "feat: add approval workflow - service layer, API routes, workflow
 `src/lib/auth/require-role.ts`:
 ```typescript
 import { auth } from '@/lib/auth'
+import { headers } from 'next/headers'
 import { NextResponse } from 'next/server'
 import { RoleName } from '@prisma/client'
 
 export async function requireRole(requiredRoles: RoleName[]) {
-  const session = await auth()
+  const session = await auth.api.getSession({ headers: await headers() })
   if (!session?.user) {
     return { error: NextResponse.json({ error: { code: 'UNAUTHORIZED', message: '인증이 필요합니다' } }, { status: 401 }) }
   }
 
-  const roles = (session.user as { roles?: string[] }).roles || []
+  const { getUserRoles } = await import('@/lib/auth/actions')
+  const roles = await getUserRoles(session.user.id)
   const hasAccess = requiredRoles.some((role) => roles.includes(role))
 
   if (!hasAccess) {
