@@ -117,7 +117,7 @@ All API Routes use try-catch with this format. Validate inputs with Zod.
 
 ### Pull Request Strategy
 
-- **Feature branches** (`feature/*`): Create a PR to `main` only after ALL tasks are complete and integration/E2E tests pass. Do not create intermediate PRs per task — accumulate commits on the feature branch.
+- **Feature branches** (`feature/*`): Create a PR to `main` after each task is complete. Push commits and create a PR per task with the task scope clearly described.
 - **Global config changes** (CLAUDE.md, .gitignore, CI configs): These are branch-independent. Create a separate short-lived branch (e.g. `docs/...`, `chore/...`) off `main`, PR immediately, and merge.
 - **Before creating any PR:** Run `npx tsc --noEmit`, `npm run build`, and `npm run test:run` to verify. All must pass.
 - **PR format:** Use `gh pr create` with `## Summary` (bullet points) and `## Test plan` (checklist) sections.
