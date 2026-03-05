@@ -3,13 +3,13 @@ title: 메타데이터 관리 플랫폼 v0.1.0 — 프로젝트 초기 구축
 version: 0.1.0
 date: 2026-03-04
 branch: feature/metadata-platform
-scope: Task 1 ~ Task 8 (구현 계획 v2 기준)
+scope: Task 1 ~ Task 9 (구현 계획 v2 기준)
 design_doc: docs/plans/2026-03-04-metadata-platform-impl-v2.md
 ---
 
 ## 개요
 
-메타데이터 관리 플랫폼의 기반 인프라를 구축하고, 표준 도메인과 표준 용어 CRUD를 구현했습니다. 프로젝트 초기 설정부터 데이터베이스 스키마, 인증 시스템, 로그인/회원가입 UI, TanStack Query 인프라, 대시보드 레이아웃, 표준 도메인 CRUD, 표준 용어 CRUD(API + UI)까지 완성되었습니다.
+메타데이터 관리 플랫폼의 기반 인프라를 구축하고, 3개 엔티티(표준 도메인, 표준 용어, 표준 코드)의 CRUD를 구현했습니다. 프로젝트 초기 설정부터 데이터베이스 스키마, 인증 시스템, 로그인/회원가입 UI, TanStack Query 인프라, 대시보드 레이아웃, 표준 도메인 CRUD, 표준 용어 CRUD, 표준 코드 CRUD(API + UI)까지 완성되었습니다.
 
 ---
 
@@ -231,14 +231,46 @@ Task 7 대비 차이점:
 
 ---
 
+### Task 9: 표준 코드 CRUD (API + UI)
+
+Task 7 패턴을 기반으로 하되, **2-tier 부모-자식 구조** (CodeGroup → CodeItem)를 도입한 세 번째 CRUD 구현.
+
+Task 7 대비 핵심 차이점:
+
+- **Zod 스키마**: `codeGroupBaseSchema`에 `items: z.array(codeItemSchema)` 중첩 구조. `.refine()`으로 items 내 itemCode 중복 검증
+- **API POST/PUT**: `prisma.$transaction()` 사용 — 그룹과 항목을 원자적으로 생성/수정
+- **PUT 전략**: delete-and-recreate (기존 항목 전체 삭제 후 재생성) — `CodeItem`에 `updatedAt` 없어 upsert보다 단순
+- **폼 구조**: 그룹 필드 + 내장 `CodeItemEditor` 하위 폼 (항목 추가/삭제/정렬/활성 토글)
+- **목록 테이블**: `_count.items` 열로 코드 항목 수 표시
+- **상세 페이지**: 그룹 정보 카드 + 읽기 전용 항목 테이블
+- **중복 검사**: `groupName` 고유 검사 (POST, PUT 모두)
+- **삭제 가드**: 불필요 — cascade delete로 항목 자동 삭제
+
+컴포넌트:
+
+- `CodeItemEditor` (`src/components/code/code-item-editor.tsx`): 제어형 하위 폼 — 편집 가능한 항목 행, 위/아래 정렬 버튼, 추가/삭제
+- `CodeGroupForm` (`src/components/code/code-group-form.tsx`): react-hook-form + `codeGroupBaseSchema`로 그룹 + 항목 동시 관리
+- `CodeGroupTable` (`src/components/code/code-group-table.tsx`): 목록 테이블 (그룹명, 영문명, 항목 수, 상태, 등록자, 등록일)
+- shadcn/ui `Checkbox` 추가 (항목 활성 토글용)
+
+**파일:** `src/lib/validations/code.ts`, `src/app/api/codes/route.ts`, `src/app/api/codes/[id]/route.ts`, `src/components/code/code-group-table.tsx`, `src/components/code/code-item-editor.tsx`, `src/components/code/code-group-form.tsx`, 4개 페이지
+
+설계 메모 — Zod + zodResolver 호환:
+
+- `codeGroupBaseSchema` (plain `z.object()`)를 폼 resolver에 사용
+- `codeGroupCreateSchema`/`codeGroupUpdateSchema` (`.refine()` 적용)는 API 검증용
+- `.default()`와 `.refine()` 조합 시 `ZodEffects` 타입이 resolver와 호환되지 않아 스키마를 분리
+
+---
+
 ## 남은 작업
 
 | Task | 설명 | 상태 |
 | ------ | ------ | ------ |
 | Task 6 | 대시보드 레이아웃 (Sidebar + Header) | 완료 |
-| Task 7 | 표준 도메인 CRUD (API + UI) | 대기 |
-| Task 8 | 표준 용어 CRUD (API + UI) | 대기 |
-| Task 9 | 표준 코드 CRUD (API + UI) | 대기 |
+| Task 7 | 표준 도메인 CRUD (API + UI) | 완료 |
+| Task 8 | 표준 용어 CRUD (API + UI) | 완료 |
+| Task 9 | 표준 코드 CRUD (API + UI) | 완료 |
 | Task 10 | 승인 워크플로우 (API + UI) | 대기 |
 | Task 11 | 관리자 페이지 (사용자/역할 관리) | 대기 |
 | Task 12 | E2E 테스트 (Playwright) | 대기 |
@@ -273,21 +305,39 @@ metadata-platform/
 │   │   │   │   └── [id]/
 │   │   │   │       ├── page.tsx    # 용어 상세 (서버 컴포넌트)
 │   │   │   │       └── edit/page.tsx # 용어 수정
-│   │   │   ├── codes/page.tsx      # 표준 코드 (플레이스홀더)
+│   │   │   ├── codes/
+│   │   │   │   ├── page.tsx        # 표준 코드 목록 (TanStack Query)
+│   │   │   │   ├── new/page.tsx    # 코드 그룹 등록
+│   │   │   │   └── [id]/
+│   │   │   │       ├── page.tsx    # 코드 그룹 상세 (서버 컴포넌트, 항목 테이블)
+│   │   │   │       └── edit/page.tsx # 코드 그룹 수정
 │   │   │   ├── workflow/page.tsx   # 승인 관리 (플레이스홀더)
 │   │   │   └── admin/users/page.tsx # 사용자 관리 (플레이스홀더)
 │   │   ├── api/
 │   │   │   ├── auth/[...all]/
 │   │   │   │   └── route.ts        # Better Auth API
-│   │   │   └── domains/
-│   │   │       ├── route.ts        # GET 목록 + POST 생성
-│   │   │       └── [id]/route.ts   # GET 상세 + PUT 수정 + DELETE 삭제
+│   │   │   ├── domains/
+│   │   │   │   ├── route.ts        # GET 목록 + POST 생성
+│   │   │   │   └── [id]/route.ts   # GET 상세 + PUT 수정 + DELETE 삭제
+│   │   │   ├── standards/
+│   │   │   │   ├── route.ts        # GET 목록 + POST 생성
+│   │   │   │   └── [id]/route.ts   # GET 상세 + PUT 수정 + DELETE 삭제
+│   │   │   └── codes/
+│   │   │       ├── route.ts        # GET 목록 + POST ($transaction)
+│   │   │       └── [id]/route.ts   # GET 상세 + PUT ($transaction) + DELETE
 │   │   ├── layout.tsx              # 루트 레이아웃
 │   │   └── page.tsx                # / → /login 리다이렉트
 │   ├── components/
+│   │   ├── code/
+│   │   │   ├── code-group-table.tsx  # 코드 그룹 목록 테이블
+│   │   │   ├── code-group-form.tsx   # 코드 그룹 생성/수정 폼
+│   │   │   └── code-item-editor.tsx  # 코드 항목 인라인 에디터
 │   │   ├── domain/
 │   │   │   ├── domain-table.tsx    # 도메인 목록 테이블
 │   │   │   └── domain-form.tsx     # 도메인 생성/수정 폼
+│   │   ├── standard/
+│   │   │   ├── term-table.tsx      # 용어 목록 테이블
+│   │   │   └── term-form.tsx       # 용어 생성/수정 폼
 │   │   ├── layout/
 │   │   │   ├── app-sidebar.tsx     # 사이드바 (역할 기반 메뉴)
 │   │   │   ├── app-header.tsx      # 헤더 (트리거 + 타이틀 + 사용자 메뉴)
@@ -295,7 +345,7 @@ metadata-platform/
 │   │   ├── shared/
 │   │   │   ├── status-badge.tsx    # 상태 배지 (DRAFT/ACTIVE/DEPRECATED)
 │   │   │   └── data-table-pagination.tsx # 페이지네이션
-│   │   └── ui/                     # shadcn/ui 컴포넌트 (21종)
+│   │   └── ui/                     # shadcn/ui 컴포넌트 (22종, checkbox 포함)
 │   ├── generated/prisma/           # Prisma 생성 코드 (.gitignore)
 │   ├── lib/
 │   │   ├── api/
@@ -312,7 +362,9 @@ metadata-platform/
 │   │   │   ├── keys.ts             # Query Key Factory
 │   │   │   └── provider.tsx        # QueryProvider (TanStack Query)
 │   │   ├── validations/
-│   │   │   └── domain.ts           # Zod 검증 스키마 (도메인)
+│   │   │   ├── domain.ts           # Zod 검증 스키마 (도메인)
+│   │   │   ├── standard.ts         # Zod 검증 스키마 (용어)
+│   │   │   └── code.ts             # Zod 검증 스키마 (코드 그룹 + 항목)
 │   │   └── utils.ts                # cn() 유틸리티
 │   ├── hooks/
 │   │   └── use-mobile.ts           # 모바일 감지 훅 (shadcn sidebar용)

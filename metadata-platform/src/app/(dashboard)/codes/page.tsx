@@ -1,3 +1,78 @@
+'use client'
+
+import { useState } from 'react'
+import Link from 'next/link'
+import { useQuery } from '@tanstack/react-query'
+
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { CodeGroupTable } from '@/components/code/code-group-table'
+import { DataTablePagination } from '@/components/shared/data-table-pagination'
+import { apiClient } from '@/lib/api/client'
+import { queryKeys } from '@/lib/query/keys'
+
 export default function CodesPage() {
-  return <h1 className="text-2xl font-bold">표준 코드 관리</h1>
+  const [page, setPage] = useState(1)
+  const [search, setSearch] = useState('')
+  const [status, setStatus] = useState<string>('all')
+
+  const params: Record<string, string> = { page: String(page), size: '20' }
+  if (search) params.search = search
+  if (status !== 'all') params.status = status
+
+  const { data, isLoading } = useQuery({
+    queryKey: queryKeys.codes.list(params),
+    queryFn: () => {
+      const qs = new URLSearchParams(params).toString()
+      return apiClient(`/api/codes?${qs}`)
+    },
+  })
+
+  return (
+    <div className="space-y-4">
+      <div className="flex items-center justify-between">
+        <h2 className="text-2xl font-bold">표준 코드</h2>
+        <Button asChild>
+          <Link href="/codes/new">코드 그룹 등록</Link>
+        </Button>
+      </div>
+
+      <div className="flex gap-2">
+        <Input
+          placeholder="코드 그룹명 검색..."
+          value={search}
+          onChange={(e) => { setSearch(e.target.value); setPage(1) }}
+          className="max-w-sm"
+        />
+        <Select value={status} onValueChange={(v) => { setStatus(v); setPage(1) }}>
+          <SelectTrigger className="w-32">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">전체</SelectItem>
+            <SelectItem value="DRAFT">초안</SelectItem>
+            <SelectItem value="ACTIVE">활성</SelectItem>
+            <SelectItem value="DEPRECATED">폐기</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
+
+      {isLoading ? (
+        <p className="text-muted-foreground">로딩 중...</p>
+      ) : (
+        <>
+          <CodeGroupTable codeGroups={(data as any)?.data || []} />
+          {(data as any)?.pagination && (
+            <DataTablePagination
+              page={(data as any).pagination.page}
+              size={(data as any).pagination.size}
+              total={(data as any).pagination.total}
+              onPageChange={setPage}
+            />
+          )}
+        </>
+      )}
+    </div>
+  )
 }

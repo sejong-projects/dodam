@@ -1,0 +1,41 @@
+import { notFound } from 'next/navigation'
+
+import { CodeGroupForm } from '@/components/code/code-group-form'
+import { prisma } from '@/lib/db/prisma'
+
+export default async function EditCodeGroupPage({
+  params,
+}: {
+  params: Promise<{ id: string }>
+}) {
+  const { id } = await params
+  const codeGroup = await prisma.codeGroup.findUnique({
+    where: { id },
+    include: {
+      items: { orderBy: { sortOrder: 'asc' } },
+    },
+  })
+
+  if (!codeGroup) notFound()
+
+  return (
+    <div className="space-y-4">
+      <h2 className="text-2xl font-bold">코드 그룹 수정</h2>
+      <CodeGroupForm
+        groupId={id}
+        defaultValues={{
+          groupName: codeGroup.groupName,
+          groupEnglishName: codeGroup.groupEnglishName,
+          groupDescription: codeGroup.groupDescription,
+          items: codeGroup.items.map((item) => ({
+            itemCode: item.itemCode,
+            itemName: item.itemName,
+            itemDescription: item.itemDescription,
+            sortOrder: item.sortOrder,
+            isActive: item.isActive,
+          })),
+        }}
+      />
+    </div>
+  )
+}
