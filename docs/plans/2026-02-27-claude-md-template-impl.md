@@ -13,6 +13,7 @@
 ### Task 1: Create directory structure and README.md
 
 Files:
+
 - Create: `docs/CLAUDE_MD/templates/README.md`
 
 Step 1: Create the directory
@@ -60,6 +61,7 @@ git commit -m "docs: add CLAUDE.md template kit README"
 ### Task 2: Write CLAUDE_MD_WRITING_GUIDE.md
 
 Files:
+
 - Create: `docs/CLAUDE_MD/templates/CLAUDE_MD_WRITING_GUIDE.md`
 
 Step 1: Write the Writing Guide
@@ -67,17 +69,20 @@ Step 1: Write the Writing Guide
 Write `docs/CLAUDE_MD/templates/CLAUDE_MD_WRITING_GUIDE.md` (~400-500 lines) following the structure of `docs/PRD/templates/PRD_WRITING_GUIDE.md`. Sections:
 
 **Section 1: CLAUDE.md란?** (~30 lines)
+
 - CLAUDE.md의 정의: Claude Code가 세션 시작 시 자동으로 읽는 프로젝트 지시서
 - 역할: 코딩 규칙, 프로젝트 구조, 워크플로우, 경계 규칙을 AI에게 전달
 - 왜 중요한가: 잘 작성된 CLAUDE.md는 AI 출력 품질을 극적으로 향상시킴
 - 이 가이드와 LLM 개발 지시서 가이드의 관계 설명 (이 가이드 = CLAUDE.md 특화 심층 가이드)
 
 **Section 2: 템플릿 구조 개요** (~20 lines)
+
 - CLAUDE_MD_TEMPLATE.md의 섹션 구조를 트리 형태로 보여줌
 - 각 섹션의 역할 한 줄 요약
 
 **Section 3: 핵심 원칙** (~80 lines)
 6가지 원칙 (LLM 가이드의 6대 원칙을 CLAUDE.md 맥락에 맞게 재해석):
+
 1. 명시적으로 작성하라 — 암시적 규칙은 AI가 무시함
 2. 구조화된 섹션 — 일관된 헤딩과 구조로 AI의 정보 검색 효율 향상
 3. 코드 예시 우선 — "camelCase를 사용하세요"보다 코드 예시가 효과적
@@ -86,6 +91,7 @@ Write `docs/CLAUDE_MD/templates/CLAUDE_MD_WRITING_GUIDE.md` (~400-500 lines) fol
 6. 자체 검증 — 체크리스트를 활용해 품질 검증
 
 각 원칙마다:
+
 - 왜 중요한지 1-2문장
 - 좋은 예시 (코드 블록)
 - 나쁜 예시 (코드 블록)
@@ -96,6 +102,7 @@ Write `docs/CLAUDE_MD/templates/CLAUDE_MD_WRITING_GUIDE.md` (~400-500 lines) fol
 | 섹션 | 핵심 포인트 | 자주 하는 실수 |
 
 그리고 각 섹션별 상세:
+
 1. 프로젝트 개요 — 기술 스택, 버전 정보 포함 필수
 2. 프로젝트 구조 — 디렉토리 트리 사용, 각 디렉토리 역할 명시
 3. 개발 규칙 — 코드 예시로 보여주기, 추상적 설명 지양
@@ -108,6 +115,7 @@ Write `docs/CLAUDE_MD/templates/CLAUDE_MD_WRITING_GUIDE.md` (~400-500 lines) fol
 각 섹션마다 좋은 예시 vs 나쁜 예시 코드 블록 포함
 
 **Section 5: 작성 팁** (~40 lines)
+
 - 명령형 어조 사용 ("~하세요", "~사용합니다")
 - 모호성 제거 (정량적 표현 우선)
 - 리터럴 리딩 테스트 — 작성 후 글자 그대로 읽어보기
@@ -116,6 +124,7 @@ Write `docs/CLAUDE_MD/templates/CLAUDE_MD_WRITING_GUIDE.md` (~400-500 lines) fol
 
 **Section 6: 안티패턴** (~50 lines)
 흔한 CLAUDE.md 실수 5가지:
+
 1. 너무 모호 — "깨끗한 코드를 작성하세요" → 구체적 규칙 필요
 2. 너무 김 — 500줄+ 시 AI가 우선순위를 놓침
 3. 모순되는 규칙 — "함수를 짧게" + "모든 에러를 처리" 충돌
@@ -125,6 +134,7 @@ Write `docs/CLAUDE_MD/templates/CLAUDE_MD_WRITING_GUIDE.md` (~400-500 lines) fol
 각 안티패턴마다 나쁜 예시 → 개선된 예시
 
 **Section 7: 파일 위치 및 모듈화** (~30 lines)
+
 - 파일 위치 계층 (우선순위 순): 프로젝트루트/CLAUDE.md → .claude/CLAUDE.md → ~/.claude/CLAUDE.md
 - CLAUDE.local.md 사용법
 - `.claude/rules/` 모듈화 전략 (300줄 초과 시)
@@ -150,6 +160,7 @@ git commit -m "docs: add CLAUDE.md writing guide with best practices"
 ### Task 3: Write CLAUDE_MD_TEMPLATE.md
 
 Files:
+
 - Create: `docs/CLAUDE_MD/templates/CLAUDE_MD_TEMPLATE.md`
 
 Step 1: Write the Template
@@ -233,6 +244,7 @@ Structure:
 ```
 
 각 섹션에:
+
 - HTML 주석으로 작성 가이드 (`<!-- 여기에 ... -->`)
 - 플레이스홀더 텍스트 (`[예: ...]`)
 - 섹션 목적 설명
@@ -257,6 +269,7 @@ git commit -m "docs: add CLAUDE.md fill-in template"
 ### Task 4: Write CLAUDE_MD_CHECKLIST.md
 
 Files:
+
 - Create: `docs/CLAUDE_MD/templates/CLAUDE_MD_CHECKLIST.md`
 
 Step 1: Write the Checklist
@@ -322,6 +335,7 @@ Structure:
 ```
 
 점수 산정 테이블 포함 (PRD 체크리스트와 동일 형식):
+
 - 섹션별 항목 수, 충족 수, 점수
 - 등급 기준: EXCELLENT / GOOD / FAIR / INSUFFICIENT
 
@@ -345,6 +359,7 @@ git commit -m "docs: add CLAUDE.md quality validation checklist"
 ### Task 5: Cross-reference from LLM Guide (optional, lightweight)
 
 Files:
+
 - Modify: `docs/GUIDE/LLM_DEV_INSTRUCTION_GUIDE.md` (add 2-3 lines near section 9.1)
 
 Step 1: Add cross-reference
@@ -377,6 +392,7 @@ Expected: README.md, CLAUDE_MD_WRITING_GUIDE.md, CLAUDE_MD_TEMPLATE.md, CLAUDE_M
 Step 2: Verify all internal links work
 
 Check that relative links in README.md point to existing files:
+
 ```bash
 grep -o '\./[^)]*' docs/CLAUDE_MD/templates/README.md
 ```
@@ -386,6 +402,7 @@ Verify each linked file exists.
 Step 3: Verify no broken cross-references
 
 Check the LLM guide cross-reference link resolves:
+
 ```bash
 ls docs/CLAUDE_MD/templates/README.md
 ```
