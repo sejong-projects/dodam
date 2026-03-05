@@ -16,7 +16,7 @@ design_doc: docs/plans/2026-03-04-metadata-platform-impl-v2.md
 ## 기술 스택
 
 | 영역 | 기술 | 버전 |
-|------|------|------|
+| ------ | ------ | ------ |
 | 프레임워크 | Next.js (App Router) | 16.1.6 |
 | 언어 | TypeScript | 5.9 |
 | 데이터베이스 | PostgreSQL | 18 |
@@ -48,7 +48,7 @@ design_doc: docs/plans/2026-03-04-metadata-platform-impl-v2.md
 
 **데이터 모델 (13 모델, 8 enum):**
 
-```
+```txt
 사용자/권한 (RBAC)
 ├── User          — 사용자 (email, password, name, department, status)
 ├── Role          — 역할 (ADMIN, STANDARD_MANAGER, APPROVER, VIEWER)
@@ -69,15 +69,17 @@ design_doc: docs/plans/2026-03-04-metadata-platform-impl-v2.md
 ```
 
 **시드 데이터:**
+
 | 구분 | 이메일 | 비밀번호 | 역할 |
-|------|--------|----------|------|
-| 관리자 | admin@example.com | admin1234 | ADMIN |
-| 표준 담당자 | manager@example.com | manager1234 | STANDARD_MANAGER |
-| 승인자 | approver@example.com | approver1234 | APPROVER |
+| ------ | -------- | ---------- | ------ |
+| 관리자 | <admin@example.com> | admin1234 | ADMIN |
+| 표준 담당자 | <manager@example.com> | manager1234 | STANDARD_MANAGER |
+| 승인자 | <approver@example.com> | approver1234 | APPROVER |
 
 - 샘플 도메인: `한글명` (VARCHAR, 100자, ACTIVE)
 
 **인프라:**
+
 - Prisma 7 Driver Adapter 패턴 (`PrismaPg`)
 - 싱글톤 클라이언트 (`src/lib/db/prisma.ts`) — hot reload 대응
 - Docker PostgreSQL 18 (port 5433, 로컬 PostgreSQL 5432 충돌 회피)
@@ -144,22 +146,27 @@ design_doc: docs/plans/2026-03-04-metadata-platform-impl-v2.md
 ## 구현 중 발견된 이슈 및 해결
 
 ### 1. Prisma 7 import 경로 변경
+
 - **문제:** Prisma 7은 `@prisma/client` 대신 `src/generated/prisma/`에 코드를 생성하며, `index.ts`가 없어 디렉토리 import 불가
 - **해결:** `@/generated/prisma/client`로 개별 파일 직접 import
 
 ### 2. Docker PostgreSQL 포트 충돌
+
 - **문제:** 로컬 PostgreSQL이 5432에서 실행 중이어서 Docker 컨테이너 연결 실패 (`P1000: Authentication failed`)
 - **해결:** Docker 컨테이너를 `-p 5433:5432`로 매핑하여 포트 분리
 
 ### 3. Prisma 7 prisma.config.ts
+
 - **문제:** Prisma 7은 `prisma.config.ts`에서 datasource URL을 설정하며, `dotenv/config` import 필요
 - **해결:** `dotenv` dev dependency 추가
 
 ### 4. Better Auth 패스워드 해싱 불일치
+
 - **문제:** 시드에서 `bcryptjs`로 해싱한 비밀번호를 Better Auth가 인식하지 못함 (`Invalid password hash`). Better Auth는 내부적으로 scrypt (`@noble/hashes`)를 사용하며, 해시 형식이 `hexSalt:hexKey`로 bcrypt의 `$2a$...` 형식과 호환되지 않음
 - **해결:** `bcryptjs` 제거, `better-auth/crypto`의 `hashPassword`로 시드 해싱 통일
 
 ### 5. Better Auth 스키마 호환성
+
 - **문제:** Better Auth가 사용자 생성 시 `emailVerified` 필드와 `accounts` 테이블을 요구하지만, 초기 스키마에 누락
 - **해결:** User 모델에 `emailVerified Boolean @default(false)` 추가, `password` 필드를 `String?`로 변경, 시드에 credential account 레코드 추가
 
@@ -168,7 +175,7 @@ design_doc: docs/plans/2026-03-04-metadata-platform-impl-v2.md
 ## 남은 작업
 
 | Task | 설명 | 상태 |
-|------|------|------|
+| ------ | ------ | ------ |
 | Task 6 | 대시보드 레이아웃 (Sidebar + Header) | 완료 |
 | Task 7 | 표준 도메인 CRUD (API + UI) | 대기 |
 | Task 8 | 표준 용어 CRUD (API + UI) | 대기 |
@@ -181,7 +188,7 @@ design_doc: docs/plans/2026-03-04-metadata-platform-impl-v2.md
 
 ## 프로젝트 구조 (현재)
 
-```
+```txt
 metadata-platform/
 ├── prisma/
 │   ├── migrations/         # DB 마이그레이션 이력

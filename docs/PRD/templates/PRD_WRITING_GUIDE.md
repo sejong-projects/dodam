@@ -39,17 +39,17 @@ PRD_TEMPLATE.md
 
 ### 필수 섹션 (Must Include)
 
-| 섹션            | 핵심 포인트                 | 자주 하는 실수                 |
+| 섹션 | 핵심 포인트 | 자주 하는 실수 |
 | ------------- | ---------------------- | ------------------------ |
-| **배경 & 문제정의** | 데이터 기반으로 문제를 객관적으로 기술  | 솔루션을 먼저 쓰고 문제를 끼워 맞춤     |
-| **목표 & 비목표**  | 정량적 성공 기준 필수, 비목표 명시   | 비목표를 생략하여 Scope Creep 발생 |
-| **범위 & 가정**   | 전제 조건의 검증 방법까지 명시      | 가정을 선언만 하고 검증 계획 누락      |
-| **사용자 시나리오**  | 정상/예외 흐름 모두 포함         | 해피 패스만 기술                |
-| **기능 요구사항**   | ID, 우선순위, 수락기준, 의존성 포함 | 기능과 구조를 혼합               |
-| **비기능 요구사항**  | 정량적 목표값과 측정 방법 명시      | "빠르게", "안정적으로" 등 모호한 표현  |
-| **의존성 그래프**   | 모든 의존성을 명시적으로 선언       | 암묵적 의존성 방치               |
-| **테스트 계획**    | 모듈별 테스트 시나리오 구체적 기술    | 테스트 전략을 "나중에" 작성         |
-| **리스크 & 이슈**  | 완화 전략과 결정 시한 포함        | 리스크를 나열만 하고 대응 누락        |
+| **배경 & 문제정의** | 데이터 기반으로 문제를 객관적으로 기술 | 솔루션을 먼저 쓰고 문제를 끼워 맞춤 |
+| **목표 & 비목표** | 정량적 성공 기준 필수, 비목표 명시 | 비목표를 생략하여 Scope Creep 발생 |
+| **범위 & 가정** | 전제 조건의 검증 방법까지 명시 | 가정을 선언만 하고 검증 계획 누락 |
+| **사용자 시나리오** | 정상/예외 흐름 모두 포함 | 해피 패스만 기술 |
+| **기능 요구사항** | ID, 우선순위, 수락기준, 의존성 포함 | 기능과 구조를 혼합 |
+| **비기능 요구사항** | 정량적 목표값과 측정 방법 명시 | "빠르게", "안정적으로" 등 모호한 표현 |
+| **의존성 그래프** | 모든 의존성을 명시적으로 선언 | 암묵적 의존성 방치 |
+| **테스트 계획** | 모듈별 테스트 시나리오 구체적 기술 | 테스트 전략을 "나중에" 작성 |
+| **리스크 & 이슈** | 완화 전략과 결정 시한 포함 | 리스크를 나열만 하고 대응 누락 |
 
 ### 권장 섹션 (Recommended)
 
@@ -243,13 +243,13 @@ PRD의 각 기능 요구사항에 해당하는 티켓(Jira, Linear, GitHub Issue
 
 실무 PRD 작성 시 참고할 수 있는 오픈소스 프로젝트의 설계 문서 패턴입니다.
 
-| 프로젝트       | 문서 유형 | 특징                                                       |
+| 프로젝트 | 문서 유형 | 특징 |
 | -------------- | --------- | ---------------------------------------------------------- |
-| Kubernetes     | KEP       | Summary, Motivation, Goals/Non-Goals, Graduation Criteria  |
-| Rust           | RFC       | Guide-level/Reference-level 설명 분리, Prior Art 섹션      |
-| OpenStack Nova | Spec      | Data/API/Security Impact 별도 섹션, Work Items 목록        |
-| Django         | DEP       | Abstract, Specification, Backwards Compatibility 포함      |
-| Stan           | Design Doc| Rust RFC 벤치마킹, GitHub Issue 연동, Unresolved Questions  |
+| Kubernetes | KEP | Summary, Motivation, Goals/Non-Goals, Graduation Criteria |
+| Rust | RFC | Guide-level/Reference-level 설명 분리, Prior Art 섹션 |
+| OpenStack Nova | Spec | Data/API/Security Impact 별도 섹션, Work Items 목록 |
+| Django | DEP | Abstract, Specification, Backwards Compatibility 포함 |
+| Stan | Design Doc | Rust RFC 벤치마킹, GitHub Issue 연동, Unresolved Questions |
 
 이들 문서의 공통점:
 - Markdown으로 작성하여 누구나 열람 가능
@@ -325,15 +325,15 @@ PRD의 각 기능 요구사항에 해당하는 티켓(Jira, Linear, GitHub Issue
 
 ## 14. 자주 하는 실수와 대응
 
-| 실수                        | 예시                                           | 올바른 방법                                          |
+| 실수 | 예시 | 올바른 방법 |
 | --------------------------- | ---------------------------------------------- | ---------------------------------------------------- |
-| 기능과 구조의 혼합          | `Capability: validation.js`                    | `Capability: Data Validation → maps to src/validation/` |
-| 모호한 모듈 경계            | `Module: utils`                                | `Module: string-utilities (명확한 exports 정의 포함)` |
-| 암묵적 의존성               | `Module: API handlers (validation이 필요함)`    | `Module: API handlers, Depends on: [validation, error-handling]` |
-| 테스트 전략 누락            | "테스트는 나중에 작성"                          | PRD 내에 모듈별 테스트 시나리오 포함                  |
-| PRD를 일회성 문서로 취급    | 한 번 작성 후 방치                              | 구현 중 발견 사항을 지속적으로 반영 (Living Document) |
-| 모호한 비기능 요구사항      | "빠르게 동작해야 한다"                          | "API 응답 P95 ≤ 200ms" (정량적 목표값 명시)          |
-| 비목표 생략                 | 범위 확장이 계속 발생                           | 비목표를 명시하여 Scope Creep 방지                    |
+| 기능과 구조의 혼합 | `Capability: validation.js` | `Capability: Data Validation → maps to src/validation/` |
+| 모호한 모듈 경계 | `Module: utils` | `Module: string-utilities (명확한 exports 정의 포함)` |
+| 암묵적 의존성 | `Module: API handlers (validation이 필요함)` | `Module: API handlers, Depends on: [validation, error-handling]` |
+| 테스트 전략 누락 | "테스트는 나중에 작성" | PRD 내에 모듈별 테스트 시나리오 포함 |
+| PRD를 일회성 문서로 취급 | 한 번 작성 후 방치 | 구현 중 발견 사항을 지속적으로 반영 (Living Document) |
+| 모호한 비기능 요구사항 | "빠르게 동작해야 한다" | "API 응답 P95 ≤ 200ms" (정량적 목표값 명시) |
+| 비목표 생략 | 범위 확장이 계속 발생 | 비목표를 명시하여 Scope Creep 방지 |
 
 ---
 

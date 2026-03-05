@@ -110,7 +110,7 @@ The v2 plan wraps `QueryProvider` inside `(dashboard)/layout.tsx`, but since it'
 ## Navigation Items
 
 | Label | Route | Icon (lucide-react) | Group |
-|-------|-------|---------------------|-------|
+| ------- | ------- | --------------------- | ------- |
 | 표준 용어 | `/standards` | BookOpen | 메타데이터 관리 |
 | 표준 도메인 | `/domains` | Layers | 메타데이터 관리 |
 | 표준 코드 | `/codes` | Code | 메타데이터 관리 |
