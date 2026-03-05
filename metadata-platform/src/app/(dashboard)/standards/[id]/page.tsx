@@ -7,7 +7,7 @@ import { StatusBadge } from '@/components/shared/status-badge'
 import { prisma } from '@/lib/db/prisma'
 import { getSession } from '@/lib/auth/get-session'
 
-export default async function TermDetailPage({
+export default async function StandardDetailPage({
   params,
 }: {
   params: Promise<{ id: string }>
@@ -18,8 +18,8 @@ export default async function TermDetailPage({
   const term = await prisma.standardTerm.findUnique({
     where: { id },
     include: {
-      creator: { select: { name: true } },
       domain: { select: { id: true, domainName: true, dataType: true } },
+      creator: { select: { name: true } },
     },
   })
 
@@ -54,10 +54,6 @@ export default async function TermDetailPage({
               <p className="font-medium">{term.termName}</p>
             </div>
             <div>
-              <p className="text-sm text-muted-foreground">상태</p>
-              <StatusBadge status={term.status} />
-            </div>
-            <div>
               <p className="text-sm text-muted-foreground">영문 용어명</p>
               <p className="font-medium">{term.termEnglishName}</p>
             </div>
@@ -66,8 +62,8 @@ export default async function TermDetailPage({
               <p className="font-medium">{term.termAbbreviation ?? '-'}</p>
             </div>
             <div>
-              <p className="text-sm text-muted-foreground">버전</p>
-              <p className="font-medium">v{term.version}</p>
+              <p className="text-sm text-muted-foreground">상태</p>
+              <StatusBadge status={term.status} />
             </div>
             <div>
               <p className="text-sm text-muted-foreground">도메인</p>
@@ -75,9 +71,13 @@ export default async function TermDetailPage({
                 {term.domain.domainName}
               </Link>
             </div>
+            <div>
+              <p className="text-sm text-muted-foreground">버전</p>
+              <p className="font-medium">{term.version}</p>
+            </div>
           </div>
           <div>
-            <p className="text-sm text-muted-foreground">설명</p>
+            <p className="text-sm text-muted-foreground">용어 설명</p>
             <p className="font-medium">{term.termDescription}</p>
           </div>
           <div className="grid grid-cols-2 gap-4 border-t pt-4">

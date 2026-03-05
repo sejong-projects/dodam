@@ -3,7 +3,7 @@ import { notFound } from 'next/navigation'
 import { TermForm } from '@/components/standard/term-form'
 import { prisma } from '@/lib/db/prisma'
 
-export default async function EditTermPage({
+export default async function EditStandardPage({
   params,
 }: {
   params: Promise<{ id: string }>
