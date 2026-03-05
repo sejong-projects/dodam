@@ -11,7 +11,7 @@ Build the authenticated dashboard layout with a sidebar navigation and top heade
 
 ## Architecture
 
-```
+``` markdown
 src/app/layout.tsx              ← Root (fonts, globals.css, QueryProvider)
 ├── (auth)/layout.tsx           ← Centered card (login/signup)
 └── (dashboard)/layout.tsx      ← NEW: Sidebar + Header (authenticated)
@@ -24,7 +24,7 @@ src/app/layout.tsx              ← Root (fonts, globals.css, QueryProvider)
 
 ## Layout Wireframe
 
-```
+``` markdown
 ┌─────────────────────────────────────────────────────────┐
 │ [≡ Trigger]  │  메타데이터 관리 플랫폼          [Avatar] │  ← Header (h-14)
 ├──────────────┼──────────────────────────────────────────┤
@@ -91,7 +91,7 @@ Props: `{ userName: string, userEmail: string }`
 
 Composes all layout components:
 
-```
+``` markdown
 SidebarProvider
 ├── AppSidebar (userRoles)
 └── flex container
@@ -119,7 +119,7 @@ The v2 plan wraps `QueryProvider` inside `(dashboard)/layout.tsx`, but since it'
 
 ## Data Flow
 
-```
+``` markdown
 (dashboard)/layout.tsx [Server]
   │
   ├─ getSession()  →  auth.api.getSession(headers)  →  Better Auth

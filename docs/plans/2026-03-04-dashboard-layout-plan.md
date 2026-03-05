@@ -21,10 +21,10 @@ design_doc: docs/plans/2026-03-04-dashboard-layout-design.md
 
 ### Task 1: Create server-side session helper
 
-**Files:**
+Files:
 - Create: `src/lib/auth/get-session.ts`
 
-**Step 1: Create get-session.ts**
+Step 1: Create get-session.ts
 
 ```typescript
 import { auth } from '@/lib/auth'
@@ -56,12 +56,12 @@ export function hasAnyRole(user: SessionUser, roles: RoleName[]): boolean {
 }
 ```
 
-**Step 2: Verify TypeScript compiles**
+Step 2: Verify TypeScript compiles
 
 Run: `npx tsc --noEmit`
 Expected: No errors related to get-session.ts
 
-**Step 3: Commit**
+Step 3: Commit
 
 ```bash
 git add src/lib/auth/get-session.ts
@@ -72,10 +72,10 @@ git commit -m "feat: add server-side session helper with role utilities"
 
 ### Task 2: Create user navigation dropdown
 
-**Files:**
+Files:
 - Create: `src/components/layout/user-nav.tsx`
 
-**Step 1: Create user-nav.tsx**
+Step 1: Create user-nav.tsx
 
 ```typescript
 'use client'
@@ -138,12 +138,12 @@ export function UserNav({ userName, userEmail }: UserNavProps) {
 }
 ```
 
-**Step 2: Verify TypeScript compiles**
+Step 2: Verify TypeScript compiles
 
 Run: `npx tsc --noEmit`
 Expected: No errors
 
-**Step 3: Commit**
+Step 3: Commit
 
 ```bash
 git add src/components/layout/user-nav.tsx
@@ -154,10 +154,10 @@ git commit -m "feat: add user navigation dropdown with avatar and logout"
 
 ### Task 3: Create app header
 
-**Files:**
+Files:
 - Create: `src/components/layout/app-header.tsx`
 
-**Step 1: Create app-header.tsx**
+Step 1: Create app-header.tsx
 
 ```typescript
 import { SidebarTrigger } from '@/components/ui/sidebar'
@@ -183,12 +183,12 @@ export function AppHeader({ userName, userEmail }: AppHeaderProps) {
 }
 ```
 
-**Step 2: Verify TypeScript compiles**
+Step 2: Verify TypeScript compiles
 
 Run: `npx tsc --noEmit`
 Expected: No errors
 
-**Step 3: Commit**
+Step 3: Commit
 
 ```bash
 git add src/components/layout/app-header.tsx
@@ -199,10 +199,10 @@ git commit -m "feat: add app header with sidebar trigger and user nav"
 
 ### Task 4: Create app sidebar
 
-**Files:**
+Files:
 - Create: `src/components/layout/app-sidebar.tsx`
 
-**Step 1: Create app-sidebar.tsx**
+Step 1: Create app-sidebar.tsx
 
 ```typescript
 'use client'
@@ -286,12 +286,12 @@ export function AppSidebar({ userRoles }: AppSidebarProps) {
 }
 ```
 
-**Step 2: Verify TypeScript compiles**
+Step 2: Verify TypeScript compiles
 
 Run: `npx tsc --noEmit`
 Expected: No errors
 
-**Step 3: Commit**
+Step 3: Commit
 
 ```bash
 git add src/components/layout/app-sidebar.tsx
@@ -302,7 +302,7 @@ git commit -m "feat: add sidebar navigation with role-based admin section"
 
 ### Task 5: Create dashboard layout and placeholder pages
 
-**Files:**
+Files:
 - Create: `src/app/(dashboard)/layout.tsx`
 - Create: `src/app/(dashboard)/standards/page.tsx`
 - Create: `src/app/(dashboard)/domains/page.tsx`
@@ -310,7 +310,7 @@ git commit -m "feat: add sidebar navigation with role-based admin section"
 - Create: `src/app/(dashboard)/workflow/page.tsx`
 - Create: `src/app/(dashboard)/admin/users/page.tsx`
 
-**Step 1: Create dashboard layout**
+Step 1: Create dashboard layout
 
 `src/app/(dashboard)/layout.tsx`:
 ```typescript
@@ -340,7 +340,7 @@ export default async function DashboardLayout({
 }
 ```
 
-**Step 2: Create placeholder pages**
+Step 2: Create placeholder pages
 
 Each placeholder page follows this pattern — a simple heading so we can test navigation:
 
@@ -379,12 +379,12 @@ export default function AdminUsersPage() {
 }
 ```
 
-**Step 3: Verify TypeScript compiles**
+Step 3: Verify TypeScript compiles
 
 Run: `npx tsc --noEmit`
 Expected: No errors
 
-**Step 4: Verify in browser**
+Step 4: Verify in browser
 
 Run: `npm run dev` (if not already running)
 1. Navigate to `http://localhost:3000` — should redirect to `/login`
@@ -396,7 +396,7 @@ Run: `npm run dev` (if not already running)
 7. Click logout → redirects to `/login`
 8. Click sidebar trigger (hamburger) → sidebar collapses/expands
 
-**Step 5: Commit**
+Step 5: Commit
 
 ```bash
 git add src/app/(dashboard)/

@@ -20,7 +20,7 @@ dodam 프로젝트에 CLAUDE.md 템플릿 킷을 추가한다. 기존 PRD 템플
 
 ## 파일 구조
 
-```
+``` markdown
 docs/
 ├── CLAUDE_MD/
 │   └── templates/
@@ -100,11 +100,11 @@ docs/
 
 ## 범위
 
-**포함:**
+포함:
 - Claude Code용 CLAUDE.md 모범 사례 및 템플릿
 - 프로젝트 수준 AI 지침에 적용되는 일반 원칙
 
-**제외:**
+제외:
 - 다른 도구용 템플릿 (Cursor .mdc, Copilot 등) — LLM 가이드에서 이미 다룸
 - 팀/기업 특화 패턴 (멀티 레포, CI 통합)
 - 자동 검증 도구

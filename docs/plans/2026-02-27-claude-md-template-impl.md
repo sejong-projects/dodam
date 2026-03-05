@@ -12,16 +12,16 @@
 
 ### Task 1: Create directory structure and README.md
 
-**Files:**
+Files:
 - Create: `docs/CLAUDE_MD/templates/README.md`
 
-**Step 1: Create the directory**
+Step 1: Create the directory
 
 ```bash
 mkdir -p docs/CLAUDE_MD/templates
 ```
 
-**Step 2: Write README.md**
+Step 2: Write README.md
 
 Write `docs/CLAUDE_MD/templates/README.md` (~50 lines) following the exact pattern of `docs/PRD/templates/README.md`:
 
@@ -42,13 +42,13 @@ Write `docs/CLAUDE_MD/templates/README.md` (~50 lines) following the exact patte
   - Builder.io CLAUDE.md guide
   - Anthropic Claude Code best practices
 
-**Step 3: Verify file exists and formatting is correct**
+Step 3: Verify file exists and formatting is correct
 
 ```bash
 cat docs/CLAUDE_MD/templates/README.md | head -20
 ```
 
-**Step 4: Commit**
+Step 4: Commit
 
 ```bash
 git add docs/CLAUDE_MD/templates/README.md
@@ -59,10 +59,10 @@ git commit -m "docs: add CLAUDE.md template kit README"
 
 ### Task 2: Write CLAUDE_MD_WRITING_GUIDE.md
 
-**Files:**
+Files:
 - Create: `docs/CLAUDE_MD/templates/CLAUDE_MD_WRITING_GUIDE.md`
 
-**Step 1: Write the Writing Guide**
+Step 1: Write the Writing Guide
 
 Write `docs/CLAUDE_MD/templates/CLAUDE_MD_WRITING_GUIDE.md` (~400-500 lines) following the structure of `docs/PRD/templates/PRD_WRITING_GUIDE.md`. Sections:
 
@@ -130,7 +130,7 @@ Write `docs/CLAUDE_MD/templates/CLAUDE_MD_WRITING_GUIDE.md` (~400-500 lines) fol
 - `.claude/rules/` 모듈화 전략 (300줄 초과 시)
 - `@imports` 활용법
 
-**Step 2: Verify line count and formatting**
+Step 2: Verify line count and formatting
 
 ```bash
 wc -l docs/CLAUDE_MD/templates/CLAUDE_MD_WRITING_GUIDE.md
@@ -138,7 +138,7 @@ wc -l docs/CLAUDE_MD/templates/CLAUDE_MD_WRITING_GUIDE.md
 
 Expected: 400-500 lines
 
-**Step 3: Commit**
+Step 3: Commit
 
 ```bash
 git add docs/CLAUDE_MD/templates/CLAUDE_MD_WRITING_GUIDE.md
@@ -149,10 +149,10 @@ git commit -m "docs: add CLAUDE.md writing guide with best practices"
 
 ### Task 3: Write CLAUDE_MD_TEMPLATE.md
 
-**Files:**
+Files:
 - Create: `docs/CLAUDE_MD/templates/CLAUDE_MD_TEMPLATE.md`
 
-**Step 1: Write the Template**
+Step 1: Write the Template
 
 Write `docs/CLAUDE_MD/templates/CLAUDE_MD_TEMPLATE.md` (~200-300 lines). This is a copy-paste-ready fill-in template. Reference the existing brief template in LLM guide section 9.1 but expand it significantly with more structure and placeholder guidance.
 
@@ -237,7 +237,7 @@ Structure:
 - 플레이스홀더 텍스트 (`[예: ...]`)
 - 섹션 목적 설명
 
-**Step 2: Verify line count**
+Step 2: Verify line count
 
 ```bash
 wc -l docs/CLAUDE_MD/templates/CLAUDE_MD_TEMPLATE.md
@@ -245,7 +245,7 @@ wc -l docs/CLAUDE_MD/templates/CLAUDE_MD_TEMPLATE.md
 
 Expected: 200-300 lines
 
-**Step 3: Commit**
+Step 3: Commit
 
 ```bash
 git add docs/CLAUDE_MD/templates/CLAUDE_MD_TEMPLATE.md
@@ -256,10 +256,10 @@ git commit -m "docs: add CLAUDE.md fill-in template"
 
 ### Task 4: Write CLAUDE_MD_CHECKLIST.md
 
-**Files:**
+Files:
 - Create: `docs/CLAUDE_MD/templates/CLAUDE_MD_CHECKLIST.md`
 
-**Step 1: Write the Checklist**
+Step 1: Write the Checklist
 
 Write `docs/CLAUDE_MD/templates/CLAUDE_MD_CHECKLIST.md` (~100-150 lines) following the pattern of `docs/PRD/templates/PRD_CHECKLIST.md`.
 
@@ -325,7 +325,7 @@ Structure:
 - 섹션별 항목 수, 충족 수, 점수
 - 등급 기준: EXCELLENT / GOOD / FAIR / INSUFFICIENT
 
-**Step 2: Verify line count**
+Step 2: Verify line count
 
 ```bash
 wc -l docs/CLAUDE_MD/templates/CLAUDE_MD_CHECKLIST.md
@@ -333,7 +333,7 @@ wc -l docs/CLAUDE_MD/templates/CLAUDE_MD_CHECKLIST.md
 
 Expected: 100-150 lines
 
-**Step 3: Commit**
+Step 3: Commit
 
 ```bash
 git add docs/CLAUDE_MD/templates/CLAUDE_MD_CHECKLIST.md
@@ -344,10 +344,10 @@ git commit -m "docs: add CLAUDE.md quality validation checklist"
 
 ### Task 5: Cross-reference from LLM Guide (optional, lightweight)
 
-**Files:**
+Files:
 - Modify: `docs/GUIDE/LLM_DEV_INSTRUCTION_GUIDE.md` (add 2-3 lines near section 9.1)
 
-**Step 1: Add cross-reference**
+Step 1: Add cross-reference
 
 Near the section 9.1 header (`### 9.1 CLAUDE.md 템플릿`), add a note pointing to the new template kit:
 
@@ -355,7 +355,7 @@ Near the section 9.1 header (`### 9.1 CLAUDE.md 템플릿`), add a note pointing
 > 💡 더 상세한 CLAUDE.md 작성 가이드와 품질 체크리스트는 [CLAUDE.md 템플릿 킷](../CLAUDE_MD/templates/README.md)을 참고하세요.
 ```
 
-**Step 2: Commit**
+Step 2: Commit
 
 ```bash
 git add docs/GUIDE/LLM_DEV_INSTRUCTION_GUIDE.md
@@ -366,7 +366,7 @@ git commit -m "docs: add cross-reference to CLAUDE.md template kit from LLM guid
 
 ### Task 6: Final validation
 
-**Step 1: Verify all files exist**
+Step 1: Verify all files exist
 
 ```bash
 ls -la docs/CLAUDE_MD/templates/
@@ -374,7 +374,7 @@ ls -la docs/CLAUDE_MD/templates/
 
 Expected: README.md, CLAUDE_MD_WRITING_GUIDE.md, CLAUDE_MD_TEMPLATE.md, CLAUDE_MD_CHECKLIST.md
 
-**Step 2: Verify all internal links work**
+Step 2: Verify all internal links work
 
 Check that relative links in README.md point to existing files:
 ```bash
@@ -383,14 +383,14 @@ grep -o '\./[^)]*' docs/CLAUDE_MD/templates/README.md
 
 Verify each linked file exists.
 
-**Step 3: Verify no broken cross-references**
+Step 3: Verify no broken cross-references
 
 Check the LLM guide cross-reference link resolves:
 ```bash
 ls docs/CLAUDE_MD/templates/README.md
 ```
 
-**Step 4: Final commit (if any fixes needed)**
+Step 4: Final commit (if any fixes needed)
 
 ```bash
 git add -A docs/CLAUDE_MD/ docs/GUIDE/

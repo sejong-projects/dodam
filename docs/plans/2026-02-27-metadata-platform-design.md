@@ -52,7 +52,7 @@
 
 ## 3. 프로젝트 구조
 
-```
+``` markdown
 metadata-platform/
 ├── src/
 │   ├── app/                        # Next.js 16 App Router
@@ -101,7 +101,7 @@ metadata-platform/
 
 ### 4.1 사용자 & 권한 (RBAC)
 
-**User**
+User
 
 | 컬럼 | 타입 | 설명 |
 | --- | --- | --- |
@@ -114,7 +114,7 @@ metadata-platform/
 | createdAt | DateTime | 생성일시 |
 | updatedAt | DateTime | 수정일시 |
 
-**Role**
+Role
 
 | 컬럼 | 타입 | 설명 |
 | --- | --- | --- |
@@ -133,7 +133,7 @@ metadata-platform/
 
 ### 4.2 표준 용어 (Standard Terms)
 
-**StandardTerm**
+StandardTerm
 
 | 컬럼 | 타입 | 설명 |
 | --- | --- | --- |
@@ -151,7 +151,7 @@ metadata-platform/
 
 ### 4.3 표준 도메인 (Standard Domains)
 
-**StandardDomain**
+StandardDomain
 
 | 컬럼 | 타입 | 설명 |
 | --- | --- | --- |
@@ -169,7 +169,7 @@ metadata-platform/
 
 ### 4.4 표준 코드 (Standard Codes)
 
-**CodeGroup**
+CodeGroup
 
 | 컬럼 | 타입 | 설명 |
 | --- | --- | --- |
@@ -182,7 +182,7 @@ metadata-platform/
 | createdAt | DateTime | 생성일시 |
 | updatedAt | DateTime | 수정일시 |
 
-**CodeItem**
+CodeItem
 
 | 컬럼 | 타입 | 설명 |
 | --- | --- | --- |
@@ -197,7 +197,7 @@ metadata-platform/
 
 ### 4.5 승인 워크플로우
 
-**ApprovalRequest**
+ApprovalRequest
 
 | 컬럼 | 타입 | 설명 |
 | --- | --- | --- |
@@ -212,7 +212,7 @@ metadata-platform/
 | createdAt | DateTime | 생성일시 |
 | updatedAt | DateTime | 수정일시 |
 
-**ApprovalHistory**
+ApprovalHistory
 
 | 컬럼 | 타입 | 설명 |
 | --- | --- | --- |
@@ -223,9 +223,9 @@ metadata-platform/
 | actorId | UUID | FK → User (행위자) |
 | createdAt | DateTime | 행위 일시 |
 
-**워크플로우 상태 흐름:**
+워크플로우 상태 흐름:
 
-```
+``` markdown
 등록 요청(PENDING) → 검토 중(REVIEWING) → 승인(APPROVED) → 표준 데이터 status → ACTIVE
                                         → 반려(REJECTED) → 담당자에게 반려 사유 표시
 ```
@@ -298,7 +298,7 @@ metadata-platform/
 
 ### 6.1 페이지 구성
 
-```
+``` markdown
 로그인 (/login)
 회원가입 (/signup)
   │
@@ -325,8 +325,9 @@ metadata-platform/
 
 ### 6.2 핵심 사용자 시나리오
 
-**표준 용어 등록 흐름:**
-```
+표준 용어 등록 흐름:
+
+``` markdown
 표준담당자: 용어 등록 폼 작성 → [등록 요청]
   → ApprovalRequest 생성 (status: PENDING)
   → StandardTerm 생성 (status: DRAFT)
@@ -346,7 +347,8 @@ metadata-platform/
 | 통합 테스트 | Vitest + Prisma (테스트 DB) | API Routes + DB 쿼리 | API 동작 검증 |
 | E2E 테스트 | Playwright | 주요 사용자 시나리오 | 전체 흐름 검증 |
 
-**MVP 필수 테스트 시나리오:**
+MVP 필수 테스트 시나리오:
+
 - 표준 용어 CRUD (등록/조회/수정/삭제 요청)
 - 승인 워크플로우 (등록 → 승인 → ACTIVE 전환)
 - 승인 워크플로우 (등록 → 반려 → 사유 확인)
@@ -357,7 +359,7 @@ metadata-platform/
 
 ## 8. 확장 로드맵
 
-```
+``` markdown
 Phase 1 (MVP) ← 현재 범위
 ├── 표준 용어/도메인/코드 관리
 ├── 승인 워크플로우
