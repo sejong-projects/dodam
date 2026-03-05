@@ -17,8 +17,8 @@ export async function GET(
     const term = await prisma.standardTerm.findUnique({
       where: { id },
       include: {
-        creator: { select: { id: true, name: true } },
         domain: { select: { id: true, domainName: true, dataType: true } },
+        creator: { select: { id: true, name: true } },
       },
     })
 
