@@ -19,7 +19,7 @@
 
 ## 2. 템플릿 구조 개요
 
-```
+``` markdown
 PRD_TEMPLATE.md
 ├── 메타 정보          → 문서 버전, 상태, 변경 이력
 ├── 섹션 1~4          → WHY & WHO (문제정의, 목표, 범위, 사용자)
@@ -71,19 +71,19 @@ PRD_TEMPLATE.md
 
 ### 잘못된 예
 
-```
+``` markdown
 Capability: validation.js          ← 파일명이 기능명
 Capability: src/utils/helpers.ts   ← 경로가 기능명
 ```
 
 ### 올바른 예
 
-```
+``` markdown
 Capability: Data Validation        ← 기능 도메인명 (WHAT)
   → maps to: src/validation/       ← 구조 매핑 (HOW)
 ```
 
-**왜 분리해야 하는가?**
+왜 분리해야 하는가?
 
 - 기능과 구조가 혼합되면 요구사항 변경 시 문서 전체를 재작성해야 합니다
 - 기능(WHAT)은 비즈니스 관점에서, 구조(HOW)는 기술 관점에서 독립적으로 논의해야 합니다
@@ -95,7 +95,7 @@ Capability: Data Validation        ← 기능 도메인명 (WHAT)
 
 ### 규칙 1: 모든 의존성을 명시적으로 선언
 
-```
+``` markdown
 ❌ Module: data-ingestion
    (schema-validator가 어딘가에 있겠지...)
 
@@ -105,7 +105,7 @@ Capability: Data Validation        ← 기능 도메인명 (WHAT)
 
 ### 규칙 2: Phase별로 그룹핑 (위상 정렬)
 
-```
+``` markdown
 Phase 0: 의존성 없는 Foundation 모듈
 Phase 1: Phase 0에만 의존하는 모듈
 Phase 2: Phase 0~1에 의존하는 모듈
@@ -114,12 +114,12 @@ Phase 2: Phase 0~1에 의존하는 모듈
 
 ### 규칙 3: 순환 의존성 금지
 
-```
+``` markdown
 ❌ A → B → C → A  (순환!)
 ✅ A → B → C      (단방향)
 ```
 
-**의존성 그래프가 중요한 이유:**
+의존성 그래프가 중요한 이유:
 
 - 빌드 순서와 병렬 개발 가능 범위를 결정합니다
 - 팀 간 작업 배분의 기초가 됩니다

@@ -39,7 +39,7 @@ npm run db:studio        # Prisma Studio GUI
 
 ### Data Flow
 
-```
+``` markdown
 Browser → proxy.ts (route protection) → App Router pages
   ↓ client components use:
   TanStack Query (QueryProvider in root layout)

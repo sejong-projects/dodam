@@ -14,7 +14,7 @@
 
 ## Task 1: 프로젝트 초기 설정
 
-**Files:**
+Files:
 - Create: `metadata-platform/` (새 리포지토리 루트)
 - Create: `metadata-platform/package.json`
 - Create: `metadata-platform/tsconfig.json`
@@ -22,7 +22,7 @@
 - Create: `metadata-platform/.env.example`
 - Create: `metadata-platform/.gitignore`
 
-**Step 1: Next.js 프로젝트 생성**
+Step 1: Next.js 프로젝트 생성
 
 ```bash
 cd C:/Users/jhkim/Desktop
@@ -38,7 +38,7 @@ npx create-next-app@latest metadata-platform --typescript --tailwind --eslint --
 - Turbopack: Yes
 - Import alias: `@/*`
 
-**Step 2: 핵심 의존성 설치**
+Step 2: 핵심 의존성 설치
 
 ```bash
 cd C:/Users/jhkim/Desktop/metadata-platform
@@ -50,7 +50,7 @@ npm install bcryptjs
 npm install -D @types/bcryptjs @types/pg vitest@4 @vitejs/plugin-react jsdom @testing-library/react @testing-library/jest-dom
 ```
 
-**Step 3: shadcn/ui 초기화**
+Step 3: shadcn/ui 초기화
 
 ```bash
 npx shadcn@latest init
@@ -67,7 +67,7 @@ shadcn/ui 기본 컴포넌트 설치:
 npx shadcn@latest add button input label card table dialog dropdown-menu select badge separator toast tabs form textarea breadcrumb sidebar sheet avatar
 ```
 
-**Step 4: 환경 변수 템플릿 생성**
+Step 4: 환경 변수 템플릿 생성
 
 `.env.example`:
 ```env
@@ -90,7 +90,7 @@ AUTH_URL="http://localhost:3000"
 NEXT_PUBLIC_APP_NAME="메타데이터 관리 플랫폼"
 ```
 
-**Step 5: Vitest 설정**
+Step 5: Vitest 설정
 
 `vitest.config.ts`:
 ```typescript
@@ -137,12 +137,12 @@ import '@testing-library/jest-dom/vitest'
 }
 ```
 
-**Step 6: 개발 서버 실행 확인**
+Step 6: 개발 서버 실행 확인
 
 Run: `npm run dev`
 Expected: 브라우저에서 `http://localhost:3000`에 Next.js 기본 페이지 표시
 
-**Step 7: 커밋**
+Step 7: 커밋
 
 ```bash
 git add -A
@@ -153,12 +153,12 @@ git commit -m "chore: initial project setup with Next.js 16.1, Tailwind CSS 4.2,
 
 ## Task 2: Prisma 스키마 & 데이터베이스 설정
 
-**Files:**
+Files:
 - Create: `prisma/schema.prisma`
 - Create: `prisma/seed.ts`
 - Create: `src/lib/db/prisma.ts`
 
-**Step 1: PostgreSQL 데이터베이스 생성**
+Step 1: PostgreSQL 데이터베이스 생성
 
 ```bash
 psql -U postgres -c "CREATE DATABASE metadata_platform;"
@@ -169,7 +169,7 @@ psql -U postgres -c "CREATE DATABASE metadata_platform;"
 docker run --name metadata-pg -e POSTGRES_PASSWORD=password -e POSTGRES_DB=metadata_platform -p 5432:5432 -d postgres:18
 ```
 
-**Step 2: Prisma 초기화 및 스키마 작성**
+Step 2: Prisma 초기화 및 스키마 작성
 
 ```bash
 npx prisma init
@@ -402,7 +402,7 @@ model ApprovalHistory {
 }
 ```
 
-**Step 3: Prisma 클라이언트 싱글톤 생성**
+Step 3: Prisma 클라이언트 싱글톤 생성
 
 `src/lib/db/prisma.ts`:
 ```typescript
@@ -419,7 +419,7 @@ export const prisma = globalForPrisma.prisma ?? new PrismaClient({ adapter })
 if (process.env.NODE_ENV !== 'production') globalForPrisma.prisma = prisma
 ```
 
-**Step 4: 마이그레이션 실행**
+Step 4: 마이그레이션 실행
 
 ```bash
 npx prisma migrate dev --name init
@@ -427,7 +427,7 @@ npx prisma migrate dev --name init
 
 Expected: `migrations/` 폴더에 마이그레이션 파일 생성, DB 테이블 생성
 
-**Step 5: 시드 데이터 작성**
+Step 5: 시드 데이터 작성
 
 `prisma/seed.ts`:
 ```typescript
@@ -520,7 +520,7 @@ main()
   .finally(() => prisma.$disconnect())
 ```
 
-**Step 6: 시드 실행**
+Step 6: 시드 실행
 
 ```bash
 npx tsx prisma/seed.ts
@@ -528,7 +528,7 @@ npx tsx prisma/seed.ts
 
 Expected: `Seed completed: { roles: 4, admin: 'admin@example.com', domain: '한글명' }`
 
-**Step 7: Prisma Studio로 확인**
+Step 7: Prisma Studio로 확인
 
 ```bash
 npx prisma studio
@@ -536,7 +536,7 @@ npx prisma studio
 
 Expected: 브라우저에서 DB 테이블과 시드 데이터 확인 가능
 
-**Step 8: 커밋**
+Step 8: 커밋
 
 ```bash
 git add -A
@@ -547,7 +547,7 @@ git commit -m "feat: add Prisma 7 schema with User, Role, StandardTerm, Standard
 
 ## Task 3: 인증 시스템 (Better Auth)
 
-**Files:**
+Files:
 - Create: `src/lib/auth/index.ts` (Better Auth 서버 설정)
 - Create: `src/lib/auth/client.ts` (Better Auth 클라이언트)
 - Create: `src/app/api/auth/[...all]/route.ts`
@@ -555,7 +555,7 @@ git commit -m "feat: add Prisma 7 schema with User, Role, StandardTerm, Standard
 - Create: `src/lib/auth/actions.ts` (서버 액션: 로그인, 회원가입)
 - Create: `src/types/auth.ts`
 
-**Step 1: Auth 타입 정의**
+Step 1: Auth 타입 정의
 
 `src/types/auth.ts`:
 ```typescript
@@ -569,7 +569,7 @@ export type SessionUser = {
 }
 ```
 
-**Step 2: Better Auth 서버 설정**
+Step 2: Better Auth 서버 설정
 
 `src/lib/auth/index.ts`:
 ```typescript
@@ -594,7 +594,7 @@ export const auth = betterAuth({
 })
 ```
 
-**Step 3: Better Auth 클라이언트**
+Step 3: Better Auth 클라이언트
 
 `src/lib/auth/client.ts`:
 ```typescript
@@ -605,7 +605,7 @@ export const authClient = createAuthClient({
 })
 ```
 
-**Step 4: Auth API 라우트**
+Step 4: Auth API 라우트
 
 `src/app/api/auth/[...all]/route.ts`:
 ```typescript
@@ -615,7 +615,7 @@ import { toNextJsHandler } from 'better-auth/next-js'
 export const { GET, POST } = toNextJsHandler(auth)
 ```
 
-**Step 5: 라우트 보호 프록시 (Next.js 16)**
+Step 5: 라우트 보호 프록시 (Next.js 16)
 
 `src/proxy.ts`:
 ```typescript
@@ -648,7 +648,7 @@ export const config = {
 }
 ```
 
-**Step 6: 서버 액션 (로그인/회원가입)**
+Step 6: 서버 액션 (로그인/회원가입)
 
 > Better Auth는 클라이언트 측에서 `authClient.signIn.email()`, `authClient.signUp.email()`을 직접 호출할 수 있으므로, 서버 액션은 RBAC 역할 부여 등 추가 로직이 필요한 경우에만 사용한다.
 
@@ -684,7 +684,7 @@ export async function getUserRoles(userId: string): Promise<RoleName[]> {
 }
 ```
 
-**Step 7: 커밋**
+Step 7: 커밋
 
 ```bash
 git add -A
@@ -695,12 +695,12 @@ git commit -m "feat: add Better Auth authentication with Prisma adapter, proxy.t
 
 ## Task 4: 로그인/회원가입 UI
 
-**Files:**
+Files:
 - Create: `src/app/(auth)/layout.tsx`
 - Create: `src/app/(auth)/login/page.tsx`
 - Create: `src/app/(auth)/signup/page.tsx`
 
-**Step 1: 인증 레이아웃**
+Step 1: 인증 레이아웃
 
 `src/app/(auth)/layout.tsx`:
 ```typescript
@@ -717,7 +717,7 @@ export default function AuthLayout({
 }
 ```
 
-**Step 2: 로그인 페이지**
+Step 2: 로그인 페이지
 
 `src/app/(auth)/login/page.tsx`:
 ```typescript
@@ -791,7 +791,7 @@ export default function LoginPage() {
 }
 ```
 
-**Step 3: 회원가입 페이지**
+Step 3: 회원가입 페이지
 
 `src/app/(auth)/signup/page.tsx`:
 ```typescript
@@ -881,14 +881,14 @@ export default function SignupPage() {
 }
 ```
 
-**Step 4: 확인**
+Step 4: 확인
 
 Run: `npm run dev`
 - `http://localhost:3000/login` → 로그인 폼 표시
 - `http://localhost:3000/signup` → 회원가입 폼 표시
 - 회원가입 후 자동 로그인 → `/standards`로 리다이렉트 (아직 404)
 
-**Step 5: 커밋**
+Step 5: 커밋
 
 ```bash
 git add -A
@@ -899,14 +899,14 @@ git commit -m "feat: add login and signup pages with server actions"
 
 ## Task 5: 대시보드 레이아웃 (Sidebar + Header)
 
-**Files:**
+Files:
 - Create: `src/app/(dashboard)/layout.tsx`
 - Create: `src/components/layout/app-sidebar.tsx`
 - Create: `src/components/layout/app-header.tsx`
 - Create: `src/components/layout/user-nav.tsx`
 - Create: `src/lib/auth/get-session.ts`
 
-**Step 1: 세션 헬퍼**
+Step 1: 세션 헬퍼
 
 `src/lib/auth/get-session.ts`:
 ```typescript
@@ -939,7 +939,7 @@ export function hasAnyRole(user: SessionUser, roles: RoleName[]): boolean {
 }
 ```
 
-**Step 2: 사이드바**
+Step 2: 사이드바
 
 `src/components/layout/app-sidebar.tsx`:
 ```typescript
@@ -1024,7 +1024,7 @@ export function AppSidebar({ userRoles }: AppSidebarProps) {
 }
 ```
 
-**Step 3: 헤더 + 사용자 네비게이션**
+Step 3: 헤더 + 사용자 네비게이션
 
 `src/components/layout/user-nav.tsx`:
 ```typescript
@@ -1113,7 +1113,7 @@ export function AppHeader({ userName, userEmail }: AppHeaderProps) {
 }
 ```
 
-**Step 4: 대시보드 레이아웃**
+Step 4: 대시보드 레이아웃
 
 `src/app/(dashboard)/layout.tsx`:
 ```typescript
@@ -1143,14 +1143,14 @@ export default async function DashboardLayout({
 }
 ```
 
-**Step 5: 확인**
+Step 5: 확인
 
 Run: `npm run dev`
 - 로그인 후 사이드바와 헤더가 표시되는지 확인
 - 사이드바에 메뉴 항목 (표준 용어, 도메인, 코드, 승인 관리) 표시
 - 우측 상단 아바타 클릭 시 로그아웃 드롭다운 표시
 
-**Step 6: 커밋**
+Step 6: 커밋
 
 ```bash
 git add -A
@@ -1163,7 +1163,7 @@ git commit -m "feat: add dashboard layout with sidebar navigation and user menu"
 
 > 표준 용어가 도메인에 의존하므로, 도메인을 먼저 구현한다.
 
-**Files:**
+Files:
 - Create: `src/app/api/domains/route.ts` (목록, 생성)
 - Create: `src/app/api/domains/[id]/route.ts` (상세, 수정, 삭제)
 - Create: `src/lib/validations/domain.ts` (Zod 스키마)
@@ -1175,7 +1175,7 @@ git commit -m "feat: add dashboard layout with sidebar navigation and user menu"
 - Create: `src/components/domain/domain-table.tsx`
 - Test: `src/__tests__/api/domains.test.ts`
 
-**Step 1: Zod 유효성 검증 스키마**
+Step 1: Zod 유효성 검증 스키마
 
 `src/lib/validations/domain.ts`:
 ```typescript
@@ -1196,7 +1196,7 @@ export type DomainCreateInput = z.infer<typeof domainCreateSchema>
 export type DomainUpdateInput = z.infer<typeof domainUpdateSchema>
 ```
 
-**Step 2: API Routes**
+Step 2: API Routes
 
 `src/app/api/domains/route.ts`:
 ```typescript
@@ -1385,7 +1385,7 @@ export async function DELETE(
 }
 ```
 
-**Step 3: UI 컴포넌트 (테이블, 폼) 및 페이지**
+Step 3: UI 컴포넌트 (테이블, 폼) 및 페이지
 
 > UI 컴포넌트와 페이지는 표준 패턴을 따르므로, 구현 시 서브에이전트가 shadcn/ui의 Table, Form, Input, Select, Button 컴포넌트를 활용하여 작성한다.
 
@@ -1400,13 +1400,13 @@ export async function DELETE(
 - 유효성 검증 (react-hook-form + zod)
 - 등록/취소 버튼
 
-**Step 4: 확인**
+Step 4: 확인
 
 - `http://localhost:3000/domains` → 도메인 목록 표시 (시드 데이터 포함)
 - 등록 → 새 도메인 생성 (status: DRAFT)
 - 수정/삭제 동작 확인
 
-**Step 5: 커밋**
+Step 5: 커밋
 
 ```bash
 git add -A
@@ -1417,7 +1417,7 @@ git commit -m "feat: add standard domain CRUD - API routes, list/detail/form pag
 
 ## Task 7: 표준 용어 CRUD (API + UI)
 
-**Files:**
+Files:
 - Create: `src/app/api/standards/route.ts`
 - Create: `src/app/api/standards/[id]/route.ts`
 - Create: `src/lib/validations/standard.ts`
@@ -1451,7 +1451,7 @@ export type TermUpdateInput = z.infer<typeof termUpdateSchema>
 
 API Routes, UI 페이지는 Task 6의 패턴을 따라 구현한다.
 
-**커밋:**
+커밋:
 
 ```bash
 git add -A
@@ -1462,7 +1462,7 @@ git commit -m "feat: add standard term CRUD - API routes, list/detail/form pages
 
 ## Task 8: 표준 코드 CRUD (API + UI)
 
-**Files:**
+Files:
 - Create: `src/app/api/codes/route.ts`
 - Create: `src/app/api/codes/[id]/route.ts`
 - Create: `src/lib/validations/code.ts`
@@ -1503,7 +1503,7 @@ export type CodeGroupUpdateInput = z.infer<typeof codeGroupUpdateSchema>
 
 API Routes, UI 페이지는 Task 6의 패턴을 따라 구현한다. 코드 그룹 상세 페이지에서 코드 아이템을 관리하는 인라인 테이블 포함.
 
-**커밋:**
+커밋:
 
 ```bash
 git add -A
@@ -1514,7 +1514,7 @@ git commit -m "feat: add code group/item CRUD - API routes, list/detail/form pag
 
 ## Task 9: 승인 워크플로우 (API + UI)
 
-**Files:**
+Files:
 - Create: `src/app/api/workflow/route.ts`
 - Create: `src/app/api/workflow/[id]/route.ts`
 - Create: `src/app/api/workflow/[id]/approve/route.ts`
@@ -1523,7 +1523,7 @@ git commit -m "feat: add code group/item CRUD - API routes, list/detail/form pag
 - Create: `src/app/(dashboard)/workflow/page.tsx`
 - Create: `src/app/(dashboard)/workflow/[id]/page.tsx`
 
-**Step 1: 승인 서비스 로직**
+Step 1: 승인 서비스 로직
 
 `src/lib/workflow/approval-service.ts`:
 ```typescript
@@ -1628,7 +1628,7 @@ async function activateTarget(tx: Parameters<Parameters<typeof prisma.$transacti
 }
 ```
 
-**Step 2: API Routes**
+Step 2: API Routes
 
 승인 워크플로우 API는 `approval-service.ts`를 호출하여 처리한다.
 
@@ -1637,7 +1637,7 @@ async function activateTarget(tx: Parameters<Parameters<typeof prisma.$transacti
 - `POST /api/workflow/:id/approve` — 승인 (APPROVER 권한 필요)
 - `POST /api/workflow/:id/reject` — 반려 (APPROVER 권한 필요, `comment` 필수)
 
-**Step 3: Task 6~8의 등록 API에 승인 워크플로우 연결**
+Step 3: Task 6~8의 등록 API에 승인 워크플로우 연결
 
 표준 데이터 등록 시 `createApprovalRequest()`를 호출하여 승인 요청을 자동 생성한다.
 
@@ -1657,21 +1657,21 @@ await createApprovalRequest({
 })
 ```
 
-**Step 4: 승인 관리 UI**
+Step 4: 승인 관리 UI
 
 승인 관리 페이지:
 - 탭 2개: "내 요청" / "승인 대기" (APPROVER만)
 - 요청 목록: 대상 타입, 대상명, 요청 유형, 요청자, 상태, 요청일
 - 상세 페이지: 요청 정보 + 대상 데이터 미리보기 + 승인 이력 + 승인/반려 버튼
 
-**Step 5: 확인**
+Step 5: 확인
 
 - 표준 담당자로 도메인 등록 → 승인 요청 자동 생성
 - 승인자로 로그인 → 승인 대기 목록에 표시
 - 승인 → 도메인 status가 ACTIVE로 변경
 - 반려 → 사유 입력 필수, 도메인 status 유지 (DRAFT)
 
-**Step 6: 커밋**
+Step 6: 커밋
 
 ```bash
 git add -A
@@ -1682,13 +1682,13 @@ git commit -m "feat: add approval workflow - service layer, API routes, workflow
 
 ## Task 10: 관리자 페이지 (사용자/역할 관리)
 
-**Files:**
+Files:
 - Create: `src/app/api/admin/users/route.ts`
 - Create: `src/app/api/admin/users/[id]/role/route.ts`
 - Create: `src/app/(dashboard)/admin/users/page.tsx`
 - Create: `src/lib/auth/require-role.ts`
 
-**Step 1: 역할 검증 헬퍼**
+Step 1: 역할 검증 헬퍼
 
 `src/lib/auth/require-role.ts`:
 ```typescript
@@ -1715,21 +1715,21 @@ export async function requireRole(requiredRoles: RoleName[]) {
 }
 ```
 
-**Step 2: 관리자 API**
+Step 2: 관리자 API
 
 - `GET /api/admin/users` — 사용자 목록 (이름, 이메일, 부서, 역할, 상태)
 - `PUT /api/admin/users/:id/role` — 역할 변경 (역할 추가/제거)
 
 ADMIN 역할만 접근 가능.
 
-**Step 3: 관리자 UI**
+Step 3: 관리자 UI
 
 사용자 관리 페이지:
 - 사용자 테이블: 이름, 이메일, 부서, 역할 뱃지, 상태
 - 역할 변경: 드롭다운 체크박스로 역할 토글
 - ADMIN 역할이 아닌 경우 /admin 접근 시 403 또는 리다이렉트
 
-**Step 4: 커밋**
+Step 4: 커밋
 
 ```bash
 git add -A
@@ -1740,13 +1740,13 @@ git commit -m "feat: add admin page - user list with role management"
 
 ## Task 11: TanStack Query 설정 & 클라이언트 상태 관리
 
-**Files:**
+Files:
 - Create: `src/lib/query/provider.tsx`
 - Create: `src/lib/query/keys.ts`
 - Create: `src/lib/api/client.ts`
 - Modify: `src/app/(dashboard)/layout.tsx`
 
-**Step 1: API 클라이언트**
+Step 1: API 클라이언트
 
 `src/lib/api/client.ts`:
 ```typescript
@@ -1777,7 +1777,7 @@ export async function apiClient<T>(
 }
 ```
 
-**Step 2: Query Keys 정의**
+Step 2: Query Keys 정의
 
 `src/lib/query/keys.ts`:
 ```typescript
@@ -1805,7 +1805,7 @@ export const queryKeys = {
 }
 ```
 
-**Step 3: Query Provider**
+Step 3: Query Provider
 
 `src/lib/query/provider.tsx`:
 ```typescript
@@ -1836,7 +1836,7 @@ export function QueryProvider({ children }: { children: React.ReactNode }) {
 
 대시보드 레이아웃에 `<QueryProvider>`로 감싼다.
 
-**Step 4: 커밋**
+Step 4: 커밋
 
 ```bash
 git add -A
@@ -1847,12 +1847,12 @@ git commit -m "feat: add TanStack Query provider, API client, and query key fact
 
 ## Task 12: E2E 테스트 (Playwright)
 
-**Files:**
+Files:
 - Create: `playwright.config.ts`
 - Create: `e2e/auth.spec.ts`
 - Create: `e2e/standards.spec.ts`
 
-**Step 1: Playwright 설치 및 설정**
+Step 1: Playwright 설치 및 설정
 
 ```bash
 npm install -D @playwright/test
@@ -1880,7 +1880,7 @@ export default defineConfig({
 })
 ```
 
-**Step 2: 핵심 E2E 테스트 작성**
+Step 2: 핵심 E2E 테스트 작성
 
 - 로그인/로그아웃 흐름
 - 회원가입 흐름
@@ -1888,13 +1888,13 @@ export default defineConfig({
 - 승인 워크플로우 (등록 → 승인 → ACTIVE)
 - 권한 없는 페이지 접근 시 리다이렉트
 
-**Step 3: 테스트 실행**
+Step 3: 테스트 실행
 
 ```bash
 npx playwright test
 ```
 
-**Step 4: 커밋**
+Step 4: 커밋
 
 ```bash
 git add -A
