@@ -16,8 +16,8 @@ interface Term {
   termName: string
   termEnglishName: string
   termAbbreviation: string | null
-  status: string
   domain: { domainName: string }
+  status: string
   creator: { name: string }
   createdAt: string
 }
