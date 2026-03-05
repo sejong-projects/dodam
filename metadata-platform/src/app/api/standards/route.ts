@@ -4,7 +4,7 @@ import { requireAuth, requireRole } from '@/lib/auth/require-role'
 import { termCreateSchema } from '@/lib/validations/standard'
 import { RoleName } from '@/generated/prisma/client'
 
-// GET /api/standards - 목록 조회
+// GET /api/standards - 표준 용어 목록 조회
 export async function GET(request: NextRequest) {
   try {
     const authResult = await requireAuth()
@@ -31,8 +31,8 @@ export async function GET(request: NextRequest) {
       prisma.standardTerm.findMany({
         where,
         include: {
-          creator: { select: { id: true, name: true } },
           domain: { select: { id: true, domainName: true } },
+          creator: { select: { id: true, name: true } },
         },
         orderBy: { createdAt: 'desc' },
         skip: (page - 1) * size,
@@ -53,7 +53,7 @@ export async function GET(request: NextRequest) {
   }
 }
 
-// POST /api/standards - 등록
+// POST /api/standards - 표준 용어 등록
 export async function POST(request: NextRequest) {
   try {
     const authResult = await requireRole([RoleName.ADMIN, RoleName.STANDARD_MANAGER])
