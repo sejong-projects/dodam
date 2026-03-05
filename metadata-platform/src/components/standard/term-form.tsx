@@ -1,9 +1,10 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
+import { useQuery } from '@tanstack/react-query'
 
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -11,12 +12,8 @@ import { Textarea } from '@/components/ui/textarea'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form'
 import { apiClient } from '@/lib/api/client'
+import { queryKeys } from '@/lib/query/keys'
 import { termCreateSchema, type TermCreateInput } from '@/lib/validations/standard'
-
-interface Domain {
-  id: string
-  domainName: string
-}
 
 interface TermFormProps {
   defaultValues?: Partial<TermCreateInput>
@@ -26,14 +23,14 @@ interface TermFormProps {
 export function TermForm({ defaultValues, termId }: TermFormProps) {
   const router = useRouter()
   const [error, setError] = useState<string>()
-  const [domains, setDomains] = useState<Domain[]>([])
   const isEditing = !!termId
 
-  useEffect(() => {
-    apiClient<{ id: string; domainName: string }[]>('/api/domains?size=100')
-      .then((res) => setDomains(res.data))
-      .catch(() => setDomains([]))
-  }, [])
+  const { data: domainsData } = useQuery({
+    queryKey: queryKeys.domains.list({ size: '100' }),
+    queryFn: () => apiClient('/api/domains?size=100'),
+  })
+
+  const domains = (domainsData as any)?.data || []
 
   const form = useForm<TermCreateInput>({
     resolver: zodResolver(termCreateSchema),
@@ -100,6 +97,20 @@ export function TermForm({ defaultValues, termId }: TermFormProps) {
 
         <FormField
           control={form.control}
+          name="termDescription"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>용어 설명 *</FormLabel>
+              <FormControl>
+                <Textarea placeholder="용어에 대한 설명을 입력하세요" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
           name="termAbbreviation"
           render={({ field }) => (
             <FormItem>
@@ -125,25 +136,13 @@ export function TermForm({ defaultValues, termId }: TermFormProps) {
                   </SelectTrigger>
                 </FormControl>
                 <SelectContent>
-                  {domains.map((domain) => (
-                    <SelectItem key={domain.id} value={domain.id}>{domain.domainName}</SelectItem>
+                  {domains.map((domain: { id: string; domainName: string }) => (
+                    <SelectItem key={domain.id} value={domain.id}>
+                      {domain.domainName}
+                    </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-
-        <FormField
-          control={form.control}
-          name="termDescription"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>용어 설명 *</FormLabel>
-              <FormControl>
-                <Textarea placeholder="용어에 대한 설명을 입력하세요" {...field} />
-              </FormControl>
               <FormMessage />
             </FormItem>
           )}
