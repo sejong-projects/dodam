@@ -34,7 +34,7 @@
 ## 2. 기술 스택
 
 | 기술 | 버전 | 용도 |
-|---|---|---|
+| --- | --- | --- |
 | Next.js | 16.1 | 풀스택 프레임워크 (App Router) |
 | React | 19 | UI 라이브러리 |
 | TypeScript | 5.9 | 타입 안전성 |
@@ -104,7 +104,7 @@ metadata-platform/
 **User**
 
 | 컬럼 | 타입 | 설명 |
-|---|---|---|
+| --- | --- | --- |
 | id | UUID | PK |
 | email | String | 고유, 로그인 ID |
 | password | String | 해시된 비밀번호 |
@@ -117,7 +117,7 @@ metadata-platform/
 **Role**
 
 | 컬럼 | 타입 | 설명 |
-|---|---|---|
+| --- | --- | --- |
 | id | UUID | PK |
 | name | String | 역할명 (ADMIN, STANDARD_MANAGER, APPROVER, VIEWER) |
 | description | String | 역할 설명 |
@@ -126,7 +126,7 @@ metadata-platform/
 **UserRole** (N:M 관계)
 
 | 컬럼 | 타입 | 설명 |
-|---|---|---|
+| --- | --- | --- |
 | userId | UUID | FK → User |
 | roleId | UUID | FK → Role |
 | assignedAt | DateTime | 부여일시 |
@@ -136,7 +136,7 @@ metadata-platform/
 **StandardTerm**
 
 | 컬럼 | 타입 | 설명 |
-|---|---|---|
+| --- | --- | --- |
 | id | UUID | PK |
 | termName | String | 표준 용어명 (한글) |
 | termEnglishName | String | 표준 용어명 (영문) |
@@ -154,7 +154,7 @@ metadata-platform/
 **StandardDomain**
 
 | 컬럼 | 타입 | 설명 |
-|---|---|---|
+| --- | --- | --- |
 | id | UUID | PK |
 | domainName | String | 도메인명 |
 | domainDescription | String | 도메인 설명 |
@@ -172,7 +172,7 @@ metadata-platform/
 **CodeGroup**
 
 | 컬럼 | 타입 | 설명 |
-|---|---|---|
+| --- | --- | --- |
 | id | UUID | PK |
 | groupName | String | 코드 그룹명 |
 | groupEnglishName | String | 코드 그룹 영문명 |
@@ -185,7 +185,7 @@ metadata-platform/
 **CodeItem**
 
 | 컬럼 | 타입 | 설명 |
-|---|---|---|
+| --- | --- | --- |
 | id | UUID | PK |
 | groupId | UUID | FK → CodeGroup |
 | itemCode | String | 코드값 |
@@ -200,7 +200,7 @@ metadata-platform/
 **ApprovalRequest**
 
 | 컬럼 | 타입 | 설명 |
-|---|---|---|
+| --- | --- | --- |
 | id | UUID | PK |
 | targetType | Enum | TERM / DOMAIN / CODE_GROUP |
 | targetId | UUID | 대상 데이터 ID |
@@ -215,7 +215,7 @@ metadata-platform/
 **ApprovalHistory**
 
 | 컬럼 | 타입 | 설명 |
-|---|---|---|
+| --- | --- | --- |
 | id | UUID | PK |
 | requestId | UUID | FK → ApprovalRequest |
 | action | Enum | SUBMITTED / APPROVED / REJECTED / CANCELLED |
@@ -237,7 +237,7 @@ metadata-platform/
 ### 5.1 표준 용어 API
 
 | 메서드 | 경로 | 설명 | 권한 |
-|---|---|---|---|
+| --- | --- | --- | --- |
 | GET | `/api/standards` | 목록 (검색, 페이징, 필터) | 전체 |
 | GET | `/api/standards/:id` | 상세 | 전체 |
 | POST | `/api/standards` | 등록 요청 | STANDARD_MANAGER |
@@ -247,7 +247,7 @@ metadata-platform/
 ### 5.2 표준 도메인 API
 
 | 메서드 | 경로 | 설명 | 권한 |
-|---|---|---|---|
+| --- | --- | --- | --- |
 | GET | `/api/domains` | 목록 | 전체 |
 | GET | `/api/domains/:id` | 상세 | 전체 |
 | POST | `/api/domains` | 등록 요청 | STANDARD_MANAGER |
@@ -257,7 +257,7 @@ metadata-platform/
 ### 5.3 표준 코드 API
 
 | 메서드 | 경로 | 설명 | 권한 |
-|---|---|---|---|
+| --- | --- | --- | --- |
 | GET | `/api/codes` | 코드 그룹 목록 | 전체 |
 | GET | `/api/codes/:id` | 코드 그룹 상세 (하위 코드 포함) | 전체 |
 | POST | `/api/codes` | 코드 그룹 등록 요청 | STANDARD_MANAGER |
@@ -267,7 +267,7 @@ metadata-platform/
 ### 5.4 승인 워크플로우 API
 
 | 메서드 | 경로 | 설명 | 권한 |
-|---|---|---|---|
+| --- | --- | --- | --- |
 | GET | `/api/workflow` | 승인 요청 목록 | STANDARD_MANAGER, APPROVER |
 | GET | `/api/workflow/:id` | 승인 요청 상세 + 이력 | STANDARD_MANAGER, APPROVER |
 | POST | `/api/workflow/:id/approve` | 승인 | APPROVER |
@@ -278,7 +278,7 @@ metadata-platform/
 > Better Auth는 `/api/auth/[...all]` 라우트를 통해 인증 엔드포인트를 자동 생성한다.
 
 | 메서드 | 경로 | 설명 | 권한 |
-|---|---|---|---|
+| --- | --- | --- | --- |
 | POST | `/api/auth/sign-in/email` | 이메일 로그인 (Better Auth 내장) | 공개 |
 | POST | `/api/auth/sign-up/email` | 이메일 회원가입 (Better Auth 내장) | 공개 |
 | POST | `/api/auth/sign-out` | 로그아웃 (Better Auth 내장) | 인증됨 |
@@ -341,7 +341,7 @@ metadata-platform/
 ## 7. 테스트 전략
 
 | 레벨 | 도구 | 대상 | 목표 |
-|---|---|---|---|
+| --- | --- | --- | --- |
 | 단위 테스트 | Vitest | 비즈니스 로직 (lib/), 유틸 함수 | 핵심 로직 검증 |
 | 통합 테스트 | Vitest + Prisma (테스트 DB) | API Routes + DB 쿼리 | API 동작 검증 |
 | E2E 테스트 | Playwright | 주요 사용자 시나리오 | 전체 흐름 검증 |
@@ -387,7 +387,7 @@ Phase 4: AI 기반 확장
 ## 설계 결정 근거
 
 | 결정 | 이유 |
-|---|---|
+| --- | --- |
 | Next.js 풀스택 모노리스 | MVP 속도 우선. 나중에 백엔드 분리 가능 |
 | Prisma 7 ORM | 타입 안전 쿼리, ESM 네이티브, 드라이버 어댑터로 유연한 DB 연결 |
 | PostgreSQL 18 | 새 I/O 서브시스템으로 최대 3배 성능 향상, 메이저 업그레이드 가속화 |
