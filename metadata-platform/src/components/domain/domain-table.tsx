@@ -11,7 +11,7 @@ import {
 } from '@/components/ui/table'
 import { StatusBadge } from '@/components/shared/status-badge'
 
-interface Domain {
+export interface Domain {
   id: string
   domainName: string
   dataType: string

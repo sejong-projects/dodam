@@ -7,7 +7,7 @@ import { useQuery } from '@tanstack/react-query'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { CodeGroupTable } from '@/components/code/code-group-table'
+import { CodeGroupTable, type CodeGroup } from '@/components/code/code-group-table'
 import { DataTablePagination } from '@/components/shared/data-table-pagination'
 import { apiClient } from '@/lib/api/client'
 import { queryKeys } from '@/lib/query/keys'
@@ -25,7 +25,7 @@ export default function CodesPage() {
     queryKey: queryKeys.codes.list(params),
     queryFn: () => {
       const qs = new URLSearchParams(params).toString()
-      return apiClient(`/api/codes?${qs}`)
+      return apiClient<CodeGroup[]>(`/api/codes?${qs}`)
     },
   })
 
@@ -62,12 +62,12 @@ export default function CodesPage() {
         <p className="text-muted-foreground">로딩 중...</p>
       ) : (
         <>
-          <CodeGroupTable codeGroups={(data as any)?.data || []} />
-          {(data as any)?.pagination && (
+          <CodeGroupTable codeGroups={data?.data ?? []} />
+          {data?.pagination && (
             <DataTablePagination
-              page={(data as any).pagination.page}
-              size={(data as any).pagination.size}
-              total={(data as any).pagination.total}
+              page={data.pagination.page}
+              size={data.pagination.size}
+              total={data.pagination.total}
               onPageChange={setPage}
             />
           )}

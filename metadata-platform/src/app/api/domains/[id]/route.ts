@@ -30,7 +30,7 @@ export async function GET(
     }
 
     return NextResponse.json({ data: domain })
-  } catch (error) {
+  } catch {
     return NextResponse.json(
       { error: { code: 'INTERNAL_ERROR', message: '도메인 조회에 실패했습니다' } },
       { status: 500 },
@@ -64,7 +64,7 @@ export async function PUT(
     })
 
     return NextResponse.json({ data: domain })
-  } catch (error) {
+  } catch {
     return NextResponse.json(
       { error: { code: 'INTERNAL_ERROR', message: '도메인 수정에 실패했습니다' } },
       { status: 500 },
@@ -93,7 +93,7 @@ export async function DELETE(
 
     await prisma.standardDomain.delete({ where: { id } })
     return NextResponse.json({ data: { success: true } })
-  } catch (error) {
+  } catch {
     return NextResponse.json(
       { error: { code: 'INTERNAL_ERROR', message: '도메인 삭제에 실패했습니다' } },
       { status: 500 },

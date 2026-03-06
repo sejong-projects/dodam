@@ -45,7 +45,7 @@ export async function GET(request: NextRequest) {
       data,
       pagination: { page, size, total },
     })
-  } catch (error) {
+  } catch {
     return NextResponse.json(
       { error: { code: 'INTERNAL_ERROR', message: '표준 용어 목록 조회에 실패했습니다' } },
       { status: 500 },
@@ -88,7 +88,7 @@ export async function POST(request: NextRequest) {
     })
 
     return NextResponse.json({ data: term }, { status: 201 })
-  } catch (error) {
+  } catch {
     return NextResponse.json(
       { error: { code: 'INTERNAL_ERROR', message: '표준 용어 등록에 실패했습니다' } },
       { status: 500 },

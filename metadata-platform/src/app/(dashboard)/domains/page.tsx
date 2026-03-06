@@ -7,7 +7,7 @@ import { useQuery } from '@tanstack/react-query'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { DomainTable } from '@/components/domain/domain-table'
+import { DomainTable, type Domain } from '@/components/domain/domain-table'
 import { DataTablePagination } from '@/components/shared/data-table-pagination'
 import { apiClient } from '@/lib/api/client'
 import { queryKeys } from '@/lib/query/keys'
@@ -25,7 +25,7 @@ export default function DomainsPage() {
     queryKey: queryKeys.domains.list(params),
     queryFn: () => {
       const qs = new URLSearchParams(params).toString()
-      return apiClient(`/api/domains?${qs}`)
+      return apiClient<Domain[]>(`/api/domains?${qs}`)
     },
   })
 
@@ -62,12 +62,12 @@ export default function DomainsPage() {
         <p className="text-muted-foreground">로딩 중...</p>
       ) : (
         <>
-          <DomainTable domains={(data as any)?.data || []} />
-          {(data as any)?.pagination && (
+          <DomainTable domains={data?.data ?? []} />
+          {data?.pagination && (
             <DataTablePagination
-              page={(data as any).pagination.page}
-              size={(data as any).pagination.size}
-              total={(data as any).pagination.total}
+              page={data.pagination.page}
+              size={data.pagination.size}
+              total={data.pagination.total}
               onPageChange={setPage}
             />
           )}

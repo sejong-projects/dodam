@@ -45,7 +45,7 @@ export async function GET(request: NextRequest) {
       data,
       pagination: { page, size, total },
     })
-  } catch (error) {
+  } catch {
     return NextResponse.json(
       { error: { code: 'INTERNAL_ERROR', message: '코드 그룹 목록 조회에 실패했습니다' } },
       { status: 500 },
@@ -110,7 +110,7 @@ export async function POST(request: NextRequest) {
     })
 
     return NextResponse.json({ data: codeGroup }, { status: 201 })
-  } catch (error) {
+  } catch {
     return NextResponse.json(
       { error: { code: 'INTERNAL_ERROR', message: '코드 그룹 등록에 실패했습니다' } },
       { status: 500 },

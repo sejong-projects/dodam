@@ -11,7 +11,7 @@ import {
 } from '@/components/ui/table'
 import { StatusBadge } from '@/components/shared/status-badge'
 
-interface CodeGroup {
+export interface CodeGroup {
   id: string
   groupName: string
   groupEnglishName: string

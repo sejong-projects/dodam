@@ -30,7 +30,7 @@ export async function GET(
     }
 
     return NextResponse.json({ data: term })
-  } catch (error) {
+  } catch {
     return NextResponse.json(
       { error: { code: 'INTERNAL_ERROR', message: '표준 용어 조회에 실패했습니다' } },
       { status: 500 },
@@ -64,7 +64,7 @@ export async function PUT(
     })
 
     return NextResponse.json({ data: term })
-  } catch (error) {
+  } catch {
     return NextResponse.json(
       { error: { code: 'INTERNAL_ERROR', message: '표준 용어 수정에 실패했습니다' } },
       { status: 500 },
@@ -84,7 +84,7 @@ export async function DELETE(
     const { id } = await params
     await prisma.standardTerm.delete({ where: { id } })
     return NextResponse.json({ data: { success: true } })
-  } catch (error) {
+  } catch {
     return NextResponse.json(
       { error: { code: 'INTERNAL_ERROR', message: '표준 용어 삭제에 실패했습니다' } },
       { status: 500 },
