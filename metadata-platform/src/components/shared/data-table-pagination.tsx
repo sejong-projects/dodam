@@ -12,6 +12,14 @@ interface PaginationProps {
 export function DataTablePagination({ page, size, total, onPageChange }: PaginationProps) {
   const totalPages = Math.ceil(total / size)
 
+  if (total === 0) {
+    return (
+      <div className="flex items-center py-4">
+        <p className="text-sm text-muted-foreground">총 0건</p>
+      </div>
+    )
+  }
+
   return (
     <div className="flex items-center justify-between py-4">
       <p className="text-sm text-muted-foreground">

@@ -4,7 +4,7 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { useQuery } from '@tanstack/react-query'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -22,15 +22,16 @@ interface TermFormProps {
 
 export function TermForm({ defaultValues, termId }: TermFormProps) {
   const router = useRouter()
+  const queryClient = useQueryClient()
   const [error, setError] = useState<string>()
   const isEditing = !!termId
 
   const { data: domainsData } = useQuery({
     queryKey: queryKeys.domains.list({ size: '100' }),
-    queryFn: () => apiClient('/api/domains?size=100'),
+    queryFn: () => apiClient<{ id: string; domainName: string }[]>('/api/domains?size=100'),
   })
 
-  const domains = (domainsData as any)?.data || []
+  const domains = domainsData?.data ?? []
 
   const form = useForm<TermCreateInput>({
     resolver: zodResolver(termCreateSchema),
@@ -57,8 +58,8 @@ export function TermForm({ defaultValues, termId }: TermFormProps) {
           body: JSON.stringify(data),
         })
       }
+      await queryClient.invalidateQueries({ queryKey: queryKeys.standards.all })
       router.push('/standards')
-      router.refresh()
     } catch (e) {
       setError(e instanceof Error ? e.message : '저장에 실패했습니다')
     }

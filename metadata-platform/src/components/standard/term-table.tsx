@@ -11,7 +11,7 @@ import {
 } from '@/components/ui/table'
 import { StatusBadge } from '@/components/shared/status-badge'
 
-interface Term {
+export interface Term {
   id: string
   termName: string
   termEnglishName: string

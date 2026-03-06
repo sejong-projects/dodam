@@ -3,29 +3,34 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import { useQuery } from '@tanstack/react-query'
+import { AlertCircle } from 'lucide-react'
 
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { TermTable } from '@/components/standard/term-table'
+import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert'
+import { TermTable, type Term } from '@/components/standard/term-table'
+import { TermTableSkeleton } from '@/components/standard/term-table-skeleton'
 import { DataTablePagination } from '@/components/shared/data-table-pagination'
 import { apiClient } from '@/lib/api/client'
 import { queryKeys } from '@/lib/query/keys'
+import { useDebounce } from '@/hooks/use-debounce'
 
 export default function StandardsPage() {
   const [page, setPage] = useState(1)
   const [search, setSearch] = useState('')
   const [status, setStatus] = useState<string>('all')
+  const debouncedSearch = useDebounce(search, 300)
 
   const params: Record<string, string> = { page: String(page), size: '20' }
-  if (search) params.search = search
+  if (debouncedSearch) params.search = debouncedSearch
   if (status !== 'all') params.status = status
 
-  const { data, isLoading } = useQuery({
+  const { data, isLoading, isError, error } = useQuery({
     queryKey: queryKeys.standards.list(params),
     queryFn: () => {
       const qs = new URLSearchParams(params).toString()
-      return apiClient(`/api/standards?${qs}`)
+      return apiClient<Term[]>(`/api/standards?${qs}`)
     },
   })
 
@@ -59,15 +64,23 @@ export default function StandardsPage() {
       </div>
 
       {isLoading ? (
-        <p className="text-muted-foreground">로딩 중...</p>
+        <TermTableSkeleton />
+      ) : isError ? (
+        <Alert variant="destructive">
+          <AlertCircle className="h-4 w-4" />
+          <AlertTitle>오류 발생</AlertTitle>
+          <AlertDescription>
+            {error instanceof Error ? error.message : '데이터를 불러오는 데 실패했습니다'}
+          </AlertDescription>
+        </Alert>
       ) : (
         <>
-          <TermTable terms={(data as any)?.data || []} />
-          {(data as any)?.pagination && (
+          <TermTable terms={data?.data || []} />
+          {data?.pagination && (
             <DataTablePagination
-              page={(data as any).pagination.page}
-              size={(data as any).pagination.size}
-              total={(data as any).pagination.total}
+              page={data.pagination.page}
+              size={data.pagination.size}
+              total={data.pagination.total}
               onPageChange={setPage}
             />
           )}
