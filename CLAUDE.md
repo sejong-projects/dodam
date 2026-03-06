@@ -1,8 +1,8 @@
 ---
 title: "dodam — CLAUDE.md"
 description: "Development instruction for Claude Code working in the dodam repository"
-version: "1.1"
-date: "2026-03-04"
+version: "1.2"
+date: "2026-03-05"
 language: "en"
 ---
 
@@ -33,7 +33,17 @@ npm run db:migrate       # Create/apply migrations
 npm run db:push          # Push schema (no migration)
 npm run db:seed          # Seed data (npx tsx prisma/seed.ts)
 npm run db:studio        # Prisma Studio GUI
+
+npx shadcn@latest add <name>  # Add shadcn/ui component (new-york style, lucide icons)
 ```
+
+## Environment Setup
+
+Copy `.env.example` to `.env` and fill in values. Required vars:
+- `DATABASE_URL` — PostgreSQL connection (default port 5433 for Docker)
+- `BETTER_AUTH_SECRET` — auth signing secret
+- `BETTER_AUTH_URL` — app base URL (`http://localhost:3000`)
+- `NEXT_PUBLIC_APP_URL` — same, exposed to client
 
 ## Architecture
 
@@ -77,6 +87,17 @@ Workflow: ApprovalRequest, ApprovalHistory (PENDING → REVIEWING → APPROVED/R
 - Query key factory at `src/lib/query/keys.ts` — use `queryKeys.domains.all` for invalidation, `queryKeys.domains.list(params)` for filtered queries
 - API client at `src/lib/api/client.ts` — typed fetch wrapper
 
+### Component Organization
+
+- `components/ui/` — shadcn/ui primitives (do not edit manually)
+- `components/layout/` — app shell: sidebar, header, user-nav
+- `components/{domain,standard,code}/` — entity-specific: `<entity>-table.tsx`, `<entity>-form.tsx`
+- `components/shared/` — cross-entity reusables (`data-table-pagination.tsx`, `status-badge.tsx`)
+
+### CRUD Page Routes
+
+Each entity under `(dashboard)/<entity>/`: `page.tsx` (list), `new/page.tsx` (create), `[id]/page.tsx` (detail), `[id]/edit/page.tsx` (edit)
+
 ## Code Style
 
 - **File naming:** kebab-case (`query-keys.ts`, `auth-client.ts`)
@@ -99,15 +120,32 @@ NextResponse.json(
   { error: { code: 'NOT_FOUND', message: '...' } },
   { status: 404 }
 )
-// Error codes: VALIDATION_ERROR(400), UNAUTHORIZED(401), FORBIDDEN(403), NOT_FOUND(404), INTERNAL_ERROR(500)
+// Error codes: VALIDATION_ERROR(400), UNAUTHORIZED(401), FORBIDDEN(403), NOT_FOUND(404), DUPLICATE(409), INTERNAL_ERROR(500)
 ```
 
 All API Routes use try-catch with this format. Validate inputs with Zod.
+API user-facing error messages are written in Korean (한국어).
+
+### Validation Schemas
+
+Located in `src/lib/validations/<entity>.ts`. Pattern:
+```typescript
+export const entityCreateSchema = z.object({ ... })
+export const entityUpdateSchema = entityCreateSchema.partial()
+```
+
+Forms use `react-hook-form` with `@hookform/resolvers/zod` for Zod schema integration.
+
+### API Auth Guards
+
+Use `requireAuth()` for read endpoints, `requireRole([...])` for write endpoints (from `src/lib/auth/require-role.ts`).
+Pattern: `const authResult = await requireRole([RoleName.ADMIN, RoleName.STANDARD_MANAGER]); if ('error' in authResult) return authResult.error`
 
 ## Testing
 
-- **Unit tests:** `tests/` directory (mirrors src structure). Vitest + jsdom + @testing-library/react
-- **E2E tests:** `e2e/` directory. Playwright
+- **Unit tests:** Vitest + jsdom + @testing-library/react. Place in `tests/` (mirror src structure). `globals: true` — no need to import describe/it/expect
+- **Vitest setup:** `src/test/setup.ts` imports `@testing-library/jest-dom/vitest` (custom matchers)
+- **E2E tests:** Playwright (planned, `e2e/` directory)
 - **Coverage target:** 70%
 
 ## Git Conventions
