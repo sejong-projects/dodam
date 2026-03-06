@@ -179,5 +179,6 @@ Pattern: `const authResult = await requireRole([RoleName.ADMIN, RoleName.STANDAR
 ## Workflow
 
 - Before each task: run `superpowers:brainstorming`
+- When creating or modifying frontend UI components/pages: run `frontend-design:frontend-design` skill
 - After each task: update release notes in `docs/releases/`
 - Before claiming completion: run `npx tsc --noEmit` and `npm run build` to verify
