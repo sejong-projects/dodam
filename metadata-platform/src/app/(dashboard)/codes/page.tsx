@@ -3,25 +3,30 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import { useQuery } from '@tanstack/react-query'
+import { AlertCircle } from 'lucide-react'
 
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert'
 import { CodeGroupTable, type CodeGroup } from '@/components/code/code-group-table'
+import { CodeGroupTableSkeleton } from '@/components/code/code-group-table-skeleton'
 import { DataTablePagination } from '@/components/shared/data-table-pagination'
 import { apiClient } from '@/lib/api/client'
 import { queryKeys } from '@/lib/query/keys'
+import { useDebounce } from '@/hooks/use-debounce'
 
 export default function CodesPage() {
   const [page, setPage] = useState(1)
   const [search, setSearch] = useState('')
   const [status, setStatus] = useState<string>('all')
+  const debouncedSearch = useDebounce(search, 300)
 
   const params: Record<string, string> = { page: String(page), size: '20' }
-  if (search) params.search = search
+  if (debouncedSearch) params.search = debouncedSearch
   if (status !== 'all') params.status = status
 
-  const { data, isLoading } = useQuery({
+  const { data, isLoading, isError, error } = useQuery({
     queryKey: queryKeys.codes.list(params),
     queryFn: () => {
       const qs = new URLSearchParams(params).toString()
@@ -59,7 +64,15 @@ export default function CodesPage() {
       </div>
 
       {isLoading ? (
-        <p className="text-muted-foreground">로딩 중...</p>
+        <CodeGroupTableSkeleton />
+      ) : isError ? (
+        <Alert variant="destructive">
+          <AlertCircle className="h-4 w-4" />
+          <AlertTitle>오류 발생</AlertTitle>
+          <AlertDescription>
+            {error instanceof Error ? error.message : '데이터를 불러오는 데 실패했습니다'}
+          </AlertDescription>
+        </Alert>
       ) : (
         <>
           <CodeGroupTable codeGroups={data?.data ?? []} />
