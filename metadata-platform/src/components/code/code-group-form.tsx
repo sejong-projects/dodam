@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
+import { useQueryClient } from '@tanstack/react-query'
 
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -11,6 +12,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form'
 import { CodeItemEditor } from '@/components/code/code-item-editor'
 import { apiClient } from '@/lib/api/client'
+import { queryKeys } from '@/lib/query/keys'
 import { codeGroupBaseSchema, type CodeGroupCreateInput } from '@/lib/validations/code'
 
 interface CodeGroupFormProps {
@@ -20,6 +22,7 @@ interface CodeGroupFormProps {
 
 export function CodeGroupForm({ defaultValues, groupId }: CodeGroupFormProps) {
   const router = useRouter()
+  const queryClient = useQueryClient()
   const [error, setError] = useState<string>()
   const isEditing = !!groupId
 
@@ -49,8 +52,8 @@ export function CodeGroupForm({ defaultValues, groupId }: CodeGroupFormProps) {
           body: JSON.stringify(data),
         })
       }
+      await queryClient.invalidateQueries({ queryKey: queryKeys.codes.all })
       router.push('/codes')
-      router.refresh()
     } catch (e) {
       setError(e instanceof Error ? e.message : '저장에 실패했습니다')
     }

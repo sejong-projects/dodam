@@ -1,7 +1,9 @@
-import { notFound } from 'next/navigation'
+import { notFound, redirect } from 'next/navigation'
 
 import { CodeGroupForm } from '@/components/code/code-group-form'
 import { prisma } from '@/lib/db/prisma'
+import { getSession, hasAnyRole } from '@/lib/auth/get-session'
+import { RoleName } from '@/generated/prisma/client'
 
 export default async function EditCodeGroupPage({
   params,
@@ -9,6 +11,12 @@ export default async function EditCodeGroupPage({
   params: Promise<{ id: string }>
 }) {
   const { id } = await params
+  const user = await getSession()
+
+  if (!hasAnyRole(user, [RoleName.ADMIN, RoleName.STANDARD_MANAGER])) {
+    redirect('/codes')
+  }
+
   const codeGroup = await prisma.codeGroup.findUnique({
     where: { id },
     include: {
