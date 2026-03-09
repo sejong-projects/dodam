@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
+import { useQueryClient } from '@tanstack/react-query'
 
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -11,6 +12,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form'
 import { apiClient } from '@/lib/api/client'
+import { queryKeys } from '@/lib/query/keys'
 import { domainCreateSchema, type DomainCreateInput } from '@/lib/validations/domain'
 
 const dataTypes = ['VARCHAR', 'NUMBER', 'DATE', 'TIMESTAMP', 'BOOLEAN', 'TEXT', 'INTEGER', 'DECIMAL']
@@ -22,6 +24,7 @@ interface DomainFormProps {
 
 export function DomainForm({ defaultValues, domainId }: DomainFormProps) {
   const router = useRouter()
+  const queryClient = useQueryClient()
   const [error, setError] = useState<string>()
   const isEditing = !!domainId
 
@@ -51,8 +54,8 @@ export function DomainForm({ defaultValues, domainId }: DomainFormProps) {
           body: JSON.stringify(data),
         })
       }
+      await queryClient.invalidateQueries({ queryKey: queryKeys.domains.all })
       router.push('/domains')
-      router.refresh()
     } catch (e) {
       setError(e instanceof Error ? e.message : '저장에 실패했습니다')
     }
