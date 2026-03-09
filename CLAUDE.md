@@ -1,8 +1,8 @@
 ---
 title: "dodam — CLAUDE.md"
 description: "Development instruction for Claude Code working in the dodam repository"
-version: "1.2"
-date: "2026-03-05"
+version: "1.3"
+date: "2026-03-09"
 language: "en"
 ---
 
@@ -22,6 +22,8 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ```bash
 npm run dev              # Dev server (Turbopack)
+# NOTE: In git worktrees, Turbopack fails to resolve tailwindcss.
+# Use `npx next dev --webpack` as a workaround.
 npm run build            # Production build
 npm run lint             # ESLint
 npm run test             # Vitest watch mode
@@ -80,7 +82,7 @@ Browser → proxy.ts (route protection) → App Router pages
 
 RBAC: User, Role, UserRole, Session, Account, Verification
 Standards: StandardDomain, StandardTerm, CodeGroup, CodeItem
-Workflow: ApprovalRequest, ApprovalHistory (PENDING → REVIEWING → APPROVED/REJECTED)
+Workflow: ApprovalRequest, ApprovalHistory (PENDING → APPROVED/REJECTED). Entity POST auto-creates ApprovalRequest; approval transitions entity to ACTIVE.
 
 ### TanStack Query
 
@@ -94,6 +96,8 @@ Workflow: ApprovalRequest, ApprovalHistory (PENDING → REVIEWING → APPROVED/R
 - `components/layout/` — app shell: sidebar, header, user-nav
 - `components/{domain,standard,code}/` — entity-specific: `<entity>-table.tsx`, `<entity>-form.tsx`
 - `components/shared/` — cross-entity reusables (`data-table-pagination.tsx`, `status-badge.tsx`)
+- `components/workflow/` — approval workflow: request table, timeline, detail actions, status badge
+- `components/admin/` — admin pages: user table, role edit dialog, status badge
 
 ### CRUD Page Routes
 
