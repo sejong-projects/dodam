@@ -6,7 +6,7 @@ date: "2026-03-05"
 language: "en"
 ---
 
-# CLAUDE.md
+## CLAUDE.md
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
@@ -40,6 +40,7 @@ npx shadcn@latest add <name>  # Add shadcn/ui component (new-york style, lucide 
 ## Environment Setup
 
 Copy `.env.example` to `.env` and fill in values. Required vars:
+
 - `DATABASE_URL` — PostgreSQL connection (default port 5433 for Docker)
 - `BETTER_AUTH_SECRET` — auth signing secret
 - `BETTER_AUTH_URL` — app base URL (`http://localhost:3000`)
@@ -129,6 +130,7 @@ API user-facing error messages are written in Korean (한국어).
 ### Validation Schemas
 
 Located in `src/lib/validations/<entity>.ts`. Pattern:
+
 ```typescript
 export const entityCreateSchema = z.object({ ... })
 export const entityUpdateSchema = entityCreateSchema.partial()
