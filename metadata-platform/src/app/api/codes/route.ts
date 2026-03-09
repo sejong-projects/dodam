@@ -1,7 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server'
+
 import { prisma } from '@/lib/db/prisma'
 import { requireAuth, requireRole } from '@/lib/auth/require-role'
 import { codeGroupCreateSchema } from '@/lib/validations/code'
+import { createApprovalRequest } from '@/lib/workflow/approval-service'
 import { RoleName } from '@/generated/prisma/client'
 
 // GET /api/codes - 코드 그룹 목록 조회
@@ -107,6 +109,13 @@ export async function POST(request: NextRequest) {
           creator: { select: { id: true, name: true } },
         },
       })
+    })
+
+    await createApprovalRequest({
+      targetType: 'CODE_GROUP',
+      targetId: codeGroup!.id,
+      requestType: 'CREATE',
+      requesterId: authResult.user.id,
     })
 
     return NextResponse.json({ data: codeGroup }, { status: 201 })

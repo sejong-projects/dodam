@@ -1,7 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server'
+
 import { prisma } from '@/lib/db/prisma'
 import { requireAuth, requireRole } from '@/lib/auth/require-role'
 import { termCreateSchema } from '@/lib/validations/standard'
+import { createApprovalRequest } from '@/lib/workflow/approval-service'
 import { RoleName } from '@/generated/prisma/client'
 
 // GET /api/standards - 표준 용어 목록 조회
@@ -85,6 +87,13 @@ export async function POST(request: NextRequest) {
         ...parsed.data,
         createdBy: authResult.user.id,
       },
+    })
+
+    await createApprovalRequest({
+      targetType: 'TERM',
+      targetId: term.id,
+      requestType: 'CREATE',
+      requesterId: authResult.user.id,
     })
 
     return NextResponse.json({ data: term }, { status: 201 })

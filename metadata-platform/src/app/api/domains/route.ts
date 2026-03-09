@@ -1,7 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server'
+
 import { prisma } from '@/lib/db/prisma'
 import { requireAuth, requireRole } from '@/lib/auth/require-role'
 import { domainCreateSchema } from '@/lib/validations/domain'
+import { createApprovalRequest } from '@/lib/workflow/approval-service'
 import { RoleName } from '@/generated/prisma/client'
 
 // GET /api/domains - 목록 조회
@@ -81,6 +83,13 @@ export async function POST(request: NextRequest) {
         ...parsed.data,
         createdBy: authResult.user.id,
       },
+    })
+
+    await createApprovalRequest({
+      targetType: 'DOMAIN',
+      targetId: domain.id,
+      requestType: 'CREATE',
+      requesterId: authResult.user.id,
     })
 
     return NextResponse.json({ data: domain }, { status: 201 })
