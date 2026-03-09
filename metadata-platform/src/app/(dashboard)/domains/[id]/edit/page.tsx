@@ -1,7 +1,9 @@
-import { notFound } from 'next/navigation'
+import { notFound, redirect } from 'next/navigation'
 
 import { DomainForm } from '@/components/domain/domain-form'
 import { prisma } from '@/lib/db/prisma'
+import { getSession, hasAnyRole } from '@/lib/auth/get-session'
+import { RoleName } from '@/generated/prisma/client'
 
 export default async function EditDomainPage({
   params,
@@ -9,6 +11,12 @@ export default async function EditDomainPage({
   params: Promise<{ id: string }>
 }) {
   const { id } = await params
+  const user = await getSession()
+
+  if (!hasAnyRole(user, [RoleName.ADMIN, RoleName.STANDARD_MANAGER])) {
+    redirect('/domains')
+  }
+
   const domain = await prisma.standardDomain.findUnique({ where: { id } })
 
   if (!domain) notFound()
