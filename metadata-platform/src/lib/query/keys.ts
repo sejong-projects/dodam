@@ -27,4 +27,9 @@ export const queryKeys = {
     detail: (id: string) =>
       [...queryKeys.workflow.all, 'detail', id] as const,
   },
+  users: {
+    all: ['users'] as const,
+    list: (params?: Record<string, string>) =>
+      [...queryKeys.users.all, 'list', params] as const,
+  },
 }
