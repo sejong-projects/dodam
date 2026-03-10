@@ -1,8 +1,8 @@
 ---
 title: "dodam — CLAUDE.md"
 description: "Development instruction for Claude Code working in the dodam repository"
-version: "1.3"
-date: "2026-03-09"
+version: "1.4"
+date: "2026-03-10"
 language: "en"
 ---
 
@@ -24,7 +24,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 npm run dev              # Dev server (Turbopack)
 # NOTE: In git worktrees, Turbopack fails to resolve tailwindcss.
 # Use `npx next dev --webpack` as a workaround.
-npm run build            # Production build
+npm run build            # Production build (uses --webpack, same workaround)
 npm run lint             # ESLint
 npm run test             # Vitest watch mode
 npm run test:run         # Vitest single run
@@ -47,6 +47,7 @@ Copy `.env.example` to `.env` and fill in values. Required vars:
 - `BETTER_AUTH_SECRET` — auth signing secret
 - `BETTER_AUTH_URL` — app base URL (`http://localhost:3000`)
 - `NEXT_PUBLIC_APP_URL` — same, exposed to client
+- `NEXT_PUBLIC_APP_NAME` — app display name (Korean default: "메타데이터 관리 플랫폼")
 
 ## Architecture
 
@@ -82,7 +83,7 @@ Browser → proxy.ts (route protection) → App Router pages
 
 RBAC: User, Role, UserRole, Session, Account, Verification
 Standards: StandardDomain, StandardTerm, CodeGroup, CodeItem
-Workflow: ApprovalRequest, ApprovalHistory (PENDING → APPROVED/REJECTED). Entity POST auto-creates ApprovalRequest; approval transitions entity to ACTIVE.
+Workflow: ApprovalRequest, ApprovalHistory (PENDING → REVIEWING → APPROVED/REJECTED). Entity POST auto-creates ApprovalRequest; approval transitions entity DRAFT → ACTIVE.
 
 ### TanStack Query
 
@@ -97,7 +98,6 @@ Workflow: ApprovalRequest, ApprovalHistory (PENDING → APPROVED/REJECTED). Enti
 - `components/{domain,standard,code}/` — entity-specific: `<entity>-table.tsx`, `<entity>-form.tsx`
 - `components/shared/` — cross-entity reusables (`data-table-pagination.tsx`, `status-badge.tsx`)
 - `components/workflow/` — approval workflow: request table, timeline, detail actions, status badge
-- `components/admin/` — admin pages: user table, role edit dialog, status badge
 
 ### CRUD Page Routes
 
@@ -149,7 +149,7 @@ Pattern: `const authResult = await requireRole([RoleName.ADMIN, RoleName.STANDAR
 
 ## Testing
 
-- **Unit tests:** Vitest + jsdom + @testing-library/react. Place in `tests/` (mirror src structure). `globals: true` — no need to import describe/it/expect
+- **Unit tests:** Vitest + jsdom + @testing-library/react. Intended dir: `tests/` (mirror src structure, not yet created). `globals: true` — no need to import describe/it/expect
 - **Vitest setup:** `src/test/setup.ts` imports `@testing-library/jest-dom/vitest` (custom matchers)
 - **E2E tests:** Playwright (planned, `e2e/` directory)
 - **Coverage target:** 70%

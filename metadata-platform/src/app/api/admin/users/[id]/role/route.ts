@@ -47,6 +47,13 @@ export async function PUT(
       where: { name: { in: parsed.data.roles } },
     })
 
+    if (roles.length !== parsed.data.roles.length) {
+      return NextResponse.json(
+        { error: { code: 'VALIDATION_ERROR', message: '유효하지 않은 역할이 포함되어 있습니다' } },
+        { status: 400 },
+      )
+    }
+
     // Transaction: delete existing roles -> create new ones
     await prisma.$transaction([
       prisma.userRole.deleteMany({ where: { userId } }),
@@ -61,15 +68,22 @@ export async function PUT(
       include: { roles: { include: { role: true } } },
     })
 
+    if (!updatedUser) {
+      return NextResponse.json(
+        { error: { code: 'INTERNAL_ERROR', message: '역할 변경 후 사용자 조회에 실패했습니다' } },
+        { status: 500 },
+      )
+    }
+
     return NextResponse.json({
       data: {
-        id: updatedUser!.id,
-        name: updatedUser!.name,
-        email: updatedUser!.email,
-        department: updatedUser!.department,
-        status: updatedUser!.status,
-        roles: updatedUser!.roles.map((ur) => ur.role.name),
-        createdAt: updatedUser!.createdAt.toISOString(),
+        id: updatedUser.id,
+        name: updatedUser.name,
+        email: updatedUser.email,
+        department: updatedUser.department,
+        status: updatedUser.status,
+        roles: updatedUser.roles.map((ur) => ur.role.name),
+        createdAt: updatedUser.createdAt.toISOString(),
       },
     })
   } catch {
