@@ -10,9 +10,9 @@ export async function GET(request: NextRequest) {
     if ('error' in authResult) return authResult.error
 
     const { searchParams } = new URL(request.url)
-    const page = parseInt(searchParams.get('page') || '1')
-    const size = parseInt(searchParams.get('size') || '20')
-    const search = searchParams.get('search') || ''
+    const page = Math.max(1, parseInt(searchParams.get('page') || '1') || 1)
+    const size = Math.min(100, Math.max(1, parseInt(searchParams.get('size') || '20') || 20))
+    const search = (searchParams.get('search') || '').slice(0, 200)
 
     const where = search
       ? {
