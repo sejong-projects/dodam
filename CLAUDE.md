@@ -1,12 +1,12 @@
 ---
 title: "dodam — CLAUDE.md"
 description: "Development instruction for Claude Code working in the dodam repository"
-version: "1.2"
-date: "2026-03-05"
+version: "1.5"
+date: "2026-03-12"
 language: "en"
 ---
 
-# CLAUDE.md
+## CLAUDE.md
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
@@ -22,7 +22,10 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ```bash
 npm run dev              # Dev server (Turbopack)
-npm run build            # Production build
+# NOTE: In git worktrees, Turbopack fails to resolve tailwindcss.
+# Use `npx next dev --webpack` as a workaround.
+npm run build            # Production build (uses --webpack, same workaround)
+npm run start            # Start production server
 npm run lint             # ESLint
 npm run test             # Vitest watch mode
 npm run test:run         # Vitest single run
@@ -40,10 +43,12 @@ npx shadcn@latest add <name>  # Add shadcn/ui component (new-york style, lucide 
 ## Environment Setup
 
 Copy `.env.example` to `.env` and fill in values. Required vars:
+
 - `DATABASE_URL` — PostgreSQL connection (default port 5433 for Docker)
 - `BETTER_AUTH_SECRET` — auth signing secret
 - `BETTER_AUTH_URL` — app base URL (`http://localhost:3000`)
 - `NEXT_PUBLIC_APP_URL` — same, exposed to client
+- `NEXT_PUBLIC_APP_NAME` — app display name (Korean default: "메타데이터 관리 플랫폼")
 
 ## Architecture
 
@@ -79,12 +84,12 @@ Browser → proxy.ts (route protection) → App Router pages
 
 RBAC: User, Role, UserRole, Session, Account, Verification
 Standards: StandardDomain, StandardTerm, CodeGroup, CodeItem
-Workflow: ApprovalRequest, ApprovalHistory (PENDING → REVIEWING → APPROVED/REJECTED)
+Workflow: ApprovalRequest, ApprovalHistory (PENDING → REVIEWING → APPROVED/REJECTED). Entity POST auto-creates ApprovalRequest; approval transitions entity DRAFT → ACTIVE.
 
 ### TanStack Query
 
 - `QueryProvider` wraps root layout with `staleTime: 60s`, `retry: 1`
-- Query key factory at `src/lib/query/keys.ts` — use `queryKeys.domains.all` for invalidation, `queryKeys.domains.list(params)` for filtered queries
+- Query key factory at `src/lib/query/keys.ts` — entities: `domains`, `standards`, `codes`, `workflow`, `users`. Use `queryKeys.<entity>.all` for invalidation, `.list(params)` for filtered queries
 - API client at `src/lib/api/client.ts` — typed fetch wrapper
 
 ### Component Organization
@@ -93,6 +98,8 @@ Workflow: ApprovalRequest, ApprovalHistory (PENDING → REVIEWING → APPROVED/R
 - `components/layout/` — app shell: sidebar, header, user-nav
 - `components/{domain,standard,code}/` — entity-specific: `<entity>-table.tsx`, `<entity>-form.tsx`
 - `components/shared/` — cross-entity reusables (`data-table-pagination.tsx`, `status-badge.tsx`)
+- `components/workflow/` — approval workflow: request table, timeline, detail actions, status badge
+- `components/admin/` — user management: user table, role edit dialog, status badge
 
 ### CRUD Page Routes
 
@@ -129,6 +136,7 @@ API user-facing error messages are written in Korean (한국어).
 ### Validation Schemas
 
 Located in `src/lib/validations/<entity>.ts`. Pattern:
+
 ```typescript
 export const entityCreateSchema = z.object({ ... })
 export const entityUpdateSchema = entityCreateSchema.partial()
@@ -143,10 +151,17 @@ Pattern: `const authResult = await requireRole([RoleName.ADMIN, RoleName.STANDAR
 
 ## Testing
 
-- **Unit tests:** Vitest + jsdom + @testing-library/react. Place in `tests/` (mirror src structure). `globals: true` — no need to import describe/it/expect
+- **Unit tests:** Vitest + jsdom + @testing-library/react. Dir: `src/__tests__/` (mirrors src structure). `globals: true` — no need to import describe/it/expect
 - **Vitest setup:** `src/test/setup.ts` imports `@testing-library/jest-dom/vitest` (custom matchers)
 - **E2E tests:** Playwright (planned, `e2e/` directory)
 - **Coverage target:** 70%
+
+## Gotchas
+
+- **Run `db:generate` after schema changes:** Always run `npm run db:generate` after editing `prisma/schema.prisma`
+- **Run `db:seed` after fresh migration:** `assignDefaultRole()` silently skips if VIEWER role doesn't exist in DB
+- **`DATABASE_URL` required at build time:** `prisma.config.ts` reads it on import — Prisma commands fail without `.env`
+- **Proxy path matching is prefix-based:** `/standards` also matches `/standardsx` — be careful when adding new routes starting with a protected path name
 
 ## Git Conventions
 
@@ -179,5 +194,6 @@ Pattern: `const authResult = await requireRole([RoleName.ADMIN, RoleName.STANDAR
 ## Workflow
 
 - Before each task: run `superpowers:brainstorming`
+- When creating or modifying frontend UI components/pages: run `frontend-design:frontend-design` skill
 - After each task: update release notes in `docs/releases/`
 - Before claiming completion: run `npx tsc --noEmit` and `npm run build` to verify
