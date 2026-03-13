@@ -1,8 +1,8 @@
 ---
 title: "dodam — CLAUDE.md"
 description: "Development instruction for Claude Code working in the dodam repository"
-version: "1.4"
-date: "2026-03-10"
+version: "1.6"
+date: "2026-03-13"
 language: "en"
 ---
 
@@ -25,6 +25,7 @@ npm run dev              # Dev server (Turbopack)
 # NOTE: In git worktrees, Turbopack fails to resolve tailwindcss.
 # Use `npx next dev --webpack` as a workaround.
 npm run build            # Production build (uses --webpack, same workaround)
+npm run start            # Start production server
 npm run lint             # ESLint
 npm run test             # Vitest watch mode
 npm run test:run         # Vitest single run
@@ -71,13 +72,13 @@ Browser → proxy.ts (route protection) → App Router pages
   - Auth pages (`/login`, `/signup`) redirect authenticated users to `/standards`
 - **RBAC:** 4 roles — ADMIN, STANDARD_MANAGER, APPROVER, VIEWER
   - Server actions: `assignDefaultRole()`, `getUserRoles()` in `src/lib/auth/actions.ts`
+  - Session helpers: `getSession()`, `hasRole()`, `hasAnyRole()` in `src/lib/auth/get-session.ts` — use in server components for role-based rendering
 
 ### Prisma 7 Specifics
 
 - **Import from `@/generated/prisma/client`** — NOT `@prisma/client`. Prisma 7 generates to `src/generated/prisma/` and has no `index.ts`, so directory imports fail.
 - **Driver Adapter pattern:** Uses `PrismaPg` adapter for flexible deployment (`src/lib/db/prisma.ts`)
 - **Config:** `prisma.config.ts` requires `import "dotenv/config"` (dotenv is a dev dependency)
-- **Docker PostgreSQL uses port 5433** (avoids local PG 5432 conflict)
 
 ### Data Models
 
@@ -85,23 +86,30 @@ RBAC: User, Role, UserRole, Session, Account, Verification
 Standards: StandardDomain, StandardTerm, CodeGroup, CodeItem
 Workflow: ApprovalRequest, ApprovalHistory (PENDING → REVIEWING → APPROVED/REJECTED). Entity POST auto-creates ApprovalRequest; approval transitions entity DRAFT → ACTIVE.
 
+### Service Layer
+
+- `src/lib/workflow/approval-service.ts` — approval business logic (status transitions, validation). Called from workflow API routes.
+
 ### TanStack Query
 
 - `QueryProvider` wraps root layout with `staleTime: 60s`, `retry: 1`
-- Query key factory at `src/lib/query/keys.ts` — use `queryKeys.domains.all` for invalidation, `queryKeys.domains.list(params)` for filtered queries
+- Query key factory at `src/lib/query/keys.ts` — entities: `domains`, `standards`, `codes`, `workflow`, `users`. Use `queryKeys.<entity>.all` for invalidation, `.list(params)` for filtered queries
 - API client at `src/lib/api/client.ts` — typed fetch wrapper
 
 ### Component Organization
 
 - `components/ui/` — shadcn/ui primitives (do not edit manually)
+- **Toast notifications:** Use `sonner` (`<Toaster />` component + `toast()` function)
+- **Theme:** `next-themes` for dark/light mode switching
 - `components/layout/` — app shell: sidebar, header, user-nav
 - `components/{domain,standard,code}/` — entity-specific: `<entity>-table.tsx`, `<entity>-form.tsx`
 - `components/shared/` — cross-entity reusables (`data-table-pagination.tsx`, `status-badge.tsx`)
 - `components/workflow/` — approval workflow: request table, timeline, detail actions, status badge
+- `components/admin/` — user management: user table, role edit dialog, status badge
 
 ### CRUD Page Routes
 
-Each entity under `(dashboard)/<entity>/`: `page.tsx` (list), `new/page.tsx` (create), `[id]/page.tsx` (detail), `[id]/edit/page.tsx` (edit)
+Each entity under `(dashboard)/<entity>/`: `page.tsx` (list), `new/page.tsx` (create), `[id]/page.tsx` (detail), `[id]/edit/page.tsx` (edit). Entities: `domains`, `standards`, `codes`, `workflow`, `admin`
 
 ## Code Style
 
@@ -149,10 +157,18 @@ Pattern: `const authResult = await requireRole([RoleName.ADMIN, RoleName.STANDAR
 
 ## Testing
 
-- **Unit tests:** Vitest + jsdom + @testing-library/react. Intended dir: `tests/` (mirror src structure, not yet created). `globals: true` — no need to import describe/it/expect
+- **Unit tests:** Vitest + jsdom + @testing-library/react. Place tests in `src/__tests__/` (mirror src structure). `globals: true` — no need to import describe/it/expect
+- **Note:** No project tests written yet — test infrastructure is configured but `src/__tests__/` doesn't exist
 - **Vitest setup:** `src/test/setup.ts` imports `@testing-library/jest-dom/vitest` (custom matchers)
 - **E2E tests:** Playwright (planned, `e2e/` directory)
 - **Coverage target:** 70%
+
+## Gotchas
+
+- **Run `db:generate` after schema changes:** Always run `npm run db:generate` after editing `prisma/schema.prisma`
+- **Run `db:seed` after fresh migration:** `assignDefaultRole()` silently skips if VIEWER role doesn't exist in DB
+- **`DATABASE_URL` required at build time:** `prisma.config.ts` reads it on import — Prisma commands fail without `.env`
+- **Proxy path matching is prefix-based:** `/standards` also matches `/standardsx` — be careful when adding new routes starting with a protected path name
 
 ## Git Conventions
 
