@@ -1,8 +1,8 @@
 ---
 title: "dodam — CLAUDE.md"
 description: "Development instruction for Claude Code working in the dodam repository"
-version: "1.5"
-date: "2026-03-12"
+version: "1.6"
+date: "2026-03-13"
 language: "en"
 ---
 
@@ -72,19 +72,23 @@ Browser → proxy.ts (route protection) → App Router pages
   - Auth pages (`/login`, `/signup`) redirect authenticated users to `/standards`
 - **RBAC:** 4 roles — ADMIN, STANDARD_MANAGER, APPROVER, VIEWER
   - Server actions: `assignDefaultRole()`, `getUserRoles()` in `src/lib/auth/actions.ts`
+  - Session helpers: `getSession()`, `hasRole()`, `hasAnyRole()` in `src/lib/auth/get-session.ts` — use in server components for role-based rendering
 
 ### Prisma 7 Specifics
 
 - **Import from `@/generated/prisma/client`** — NOT `@prisma/client`. Prisma 7 generates to `src/generated/prisma/` and has no `index.ts`, so directory imports fail.
 - **Driver Adapter pattern:** Uses `PrismaPg` adapter for flexible deployment (`src/lib/db/prisma.ts`)
 - **Config:** `prisma.config.ts` requires `import "dotenv/config"` (dotenv is a dev dependency)
-- **Docker PostgreSQL uses port 5433** (avoids local PG 5432 conflict)
 
 ### Data Models
 
 RBAC: User, Role, UserRole, Session, Account, Verification
 Standards: StandardDomain, StandardTerm, CodeGroup, CodeItem
 Workflow: ApprovalRequest, ApprovalHistory (PENDING → REVIEWING → APPROVED/REJECTED). Entity POST auto-creates ApprovalRequest; approval transitions entity DRAFT → ACTIVE.
+
+### Service Layer
+
+- `src/lib/workflow/approval-service.ts` — approval business logic (status transitions, validation). Called from workflow API routes.
 
 ### TanStack Query
 
@@ -95,6 +99,8 @@ Workflow: ApprovalRequest, ApprovalHistory (PENDING → REVIEWING → APPROVED/R
 ### Component Organization
 
 - `components/ui/` — shadcn/ui primitives (do not edit manually)
+- **Toast notifications:** Use `sonner` (`<Toaster />` component + `toast()` function)
+- **Theme:** `next-themes` for dark/light mode switching
 - `components/layout/` — app shell: sidebar, header, user-nav
 - `components/{domain,standard,code}/` — entity-specific: `<entity>-table.tsx`, `<entity>-form.tsx`
 - `components/shared/` — cross-entity reusables (`data-table-pagination.tsx`, `status-badge.tsx`)
@@ -103,7 +109,7 @@ Workflow: ApprovalRequest, ApprovalHistory (PENDING → REVIEWING → APPROVED/R
 
 ### CRUD Page Routes
 
-Each entity under `(dashboard)/<entity>/`: `page.tsx` (list), `new/page.tsx` (create), `[id]/page.tsx` (detail), `[id]/edit/page.tsx` (edit)
+Each entity under `(dashboard)/<entity>/`: `page.tsx` (list), `new/page.tsx` (create), `[id]/page.tsx` (detail), `[id]/edit/page.tsx` (edit). Entities: `domains`, `standards`, `codes`, `workflow`, `admin`
 
 ## Code Style
 
@@ -151,7 +157,8 @@ Pattern: `const authResult = await requireRole([RoleName.ADMIN, RoleName.STANDAR
 
 ## Testing
 
-- **Unit tests:** Vitest + jsdom + @testing-library/react. Dir: `src/__tests__/` (mirrors src structure). `globals: true` — no need to import describe/it/expect
+- **Unit tests:** Vitest + jsdom + @testing-library/react. Place tests in `src/__tests__/` (mirror src structure). `globals: true` — no need to import describe/it/expect
+- **Note:** No project tests written yet — test infrastructure is configured but `src/__tests__/` doesn't exist
 - **Vitest setup:** `src/test/setup.ts` imports `@testing-library/jest-dom/vitest` (custom matchers)
 - **E2E tests:** Playwright (planned, `e2e/` directory)
 - **Coverage target:** 70%
